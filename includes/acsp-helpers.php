@@ -1,9 +1,5 @@
 <?php
 /**
- * Tiny reusable helpers.
- */
-
-/**
  * Allowed CSP directives for sanitisation.
  */
 function acsp_allowed_directives() {
@@ -16,7 +12,7 @@ function acsp_allowed_directives() {
 }
 
 /**
- * Sanitise policy array (same logic as original).
+ * Sanitise policy array .
  */
 function acsp_sanitize_policy( $input ) {
     $sanitized = [];

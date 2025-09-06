@@ -3,9 +3,6 @@
  * Ajax handlers + JSON import/export + preset apply/reset.
  */
 
-/* ------------------------------------------------------------------
- *  Test report-uri via AJAX
- * ----------------------------------------------------------------- */
 add_action( 'wp_ajax_acsp_test_report_uri', 'acsp_ajax_test_report' );
 function acsp_ajax_test_report() {
     $url = isset( $_POST['url'] ) ? esc_url_raw( $_POST['url'] ) : '';
@@ -42,8 +39,8 @@ function acsp_handle_export() {
             'add_dynamic_nonce' => (bool) get_option( 'acsp_add_dynamic_nonce', 1 ),
             'policy'            => get_option( 'acsp_policy', [] ),
             'enable_meta_tag'   => (bool) get_option( 'acsp_enable_meta_tag', 0 ),
-            'enable_hashes'     => (bool) get_option( 'acsp_enable_hashes', 0 ),
             'report_endpoint'   => get_option( 'acsp_report_endpoint', '' ),
+            'enable_hashes'     => (bool) get_option( 'acsp_enable_hashes', 0 ),
         ];
         if ( $export['enable_hashes'] ) {
             $export['hash_values'] = get_option( 'acsp_hash_values', [] );
@@ -111,9 +108,6 @@ function acsp_preset_reset_handlers() {
             'acsp_policy',
             'acsp_current_preset',
             'acsp_add_dynamic_nonce',
-            'acsp_enable_hashes',
-            'acsp_hash_values',
-            'acsp_enable_meta_tag',
         ];
         foreach ( $opts as $o ) {
             delete_option( $o );

@@ -95,7 +95,7 @@ $keyword_explanations = [
                     <?php submit_button( 'Save Changes', 'primary', 'submit', false ); ?>
                     <button type="submit" name="acsp_reset_all" class="button button-link-delete"
                             onclick="return confirm('Are you sure you want to reset all CSP configuration? This will remove ALL settings and deactivate CSP.');">
-                        Reset All Settings
+                        Reset All Policies
                     </button>
                     <?php wp_nonce_field( 'acsp_reset_action', 'acsp_reset_nonce' ); ?>
                 </div>
