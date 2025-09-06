@@ -3,7 +3,7 @@
  * Plugin Name: aCSP Builder
  * Plugin URI:  https://plugins.awhadi.online 
  * Description: The FIRST WordPress plugin that automatically adds cryptographic nonces to every script & stylesheet, lets you hash-lock inline code, and builds a bullet-proof Content Security Policy in one click.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Requires WP: 5.8
  * Requires PHP:7.4
  * Text Domain: aCSP

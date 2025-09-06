@@ -19,7 +19,12 @@ settings_errors( 'acsp_settings' );
         <?php foreach ( [ 'presets' => 'Quick Start', 'builder' => 'Custom Policy Builder', 'settings' => 'Settings', 'about' => 'About' ] as $tab => $label ) : ?>
             <a href="<?php echo esc_url( add_query_arg( 'tab', $tab, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo( $tab === 'settings' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
         <?php endforeach; ?>
-        <span class="acsp-preset-badge <?php echo esc_attr( get_option( 'acsp_current_preset' ) ?: 'custom' ); ?>"><?php echo esc_html( get_option( 'acsp_current_preset' ) ? acsp_get_presets()[ get_option( 'acsp_current_preset' ) ]['name'] : 'Custom' ); ?></span>
+        <span class="acsp-preset-badge <?php echo esc_attr( get_option( 'acsp_current_preset' ) ?: 'custom' ); ?>">
+            <?php
+            $cp = get_option( 'acsp_current_preset' );
+            echo esc_html( $cp && isset( acsp_get_presets()[ $cp ] ) ? acsp_get_presets()[ $cp ]['name'] : 'Custom' );
+            ?>
+        </span>
     </h2>
 
     <div style="display:flex;gap:24px;align-items:flex-start;">
@@ -109,7 +114,7 @@ settings_errors( 'acsp_settings' );
                                         ?>
                                         <div class="acsp-hash-item">
                                             <input type="text" name="acsp_hash_values[]" value="<?php echo esc_attr( $hash ); ?>"
-                                                   placeholder="sha256-AbCdEf123…" class="regular-text code"/>
+                                                   placeholder="sha256-…" class="regular-text code"/>
                                             <button type="button" class="button button-small acsp-remove-hash">Remove</button>
                                         </div>
                                     <?php endforeach; ?>

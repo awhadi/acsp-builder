@@ -29,7 +29,9 @@ $current_preset = get_option( 'acsp_current_preset', '' );
         <?php foreach ( [ 'presets' => 'Quick Start', 'builder' => 'Custom Policy Builder', 'settings' => 'Settings', 'about' => 'About' ] as $tab => $label ) : ?>
             <a href="<?php echo esc_url( add_query_arg( 'tab', $tab, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo( $tab === 'presets' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
         <?php endforeach; ?>
-        <span class="acsp-preset-badge <?php echo esc_attr( $preset_class ); ?>"><?php echo esc_html( $preset_name ); ?></span>
+        <span class="acsp-preset-badge <?php echo esc_attr( $preset_class ); ?>">
+            <?php echo esc_html( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom' ); ?>
+        </span>
     </h2>
 
     <div style="margin-top:20px;">
@@ -42,8 +44,8 @@ $current_preset = get_option( 'acsp_current_preset', '' );
             $policy_arr     = get_option( 'acsp_policy', [] );
             $report_endpoint= get_option( 'acsp_report_endpoint', '' );
 
-            $directives     = [];
-            $source         = ( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) )
+            $directives = [];
+            $source     = ( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) )
                 ? acsp_get_presets()[ $current_preset ]['policy']
                 : $policy_arr;
 
@@ -104,7 +106,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
                                 'relaxed'  => '🟢',
                                 'balanced' => '🟡',
                                 'strict'   => '🔴',
-                            ][ $key ];
+                            ][ $key ] ?? '🔘';
                             ?>
                             <?php echo esc_html( $preset['name'] ); ?>
                         </h3>
@@ -114,7 +116,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
                                 'relaxed'  => 'Beginner',
                                 'balanced' => 'Intermediate',
                                 'strict'   => 'Advanced',
-                            ][ $key ];
+                            ][ $key ] ?? '';
                             ?>
                         </span>
                         <p class="description"><?php echo esc_html( $preset['description'] ?? '' ); ?></p>
@@ -125,7 +127,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
                                 'balanced' => [ 'Uses nonces for inline scripts/styles', 'Allows Google services (Analytics, Fonts)', 'Permits common CDN sources', 'Good security without breaking functionality' ],
                                 'strict'   => [ 'Maximum security protection', 'Only same-origin resources allowed', 'Nonces required for all inline code', 'Blocks external resources entirely' ],
                             ];
-                            foreach ( $features[ $key ] as $f ) {
+                            foreach ( ( $features[ $key ] ?? [] ) as $f ) {
                                 echo '<li>' . esc_html( $f ) . '</li>';
                             }
                             ?>
@@ -137,7 +139,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 
                         <div class="acsp-current-policy">
                             <h4>Policy Preview:</h4>
-                            <code>script-src: <?php echo esc_html( implode( ' ', array_slice( explode( ' ', $preset['policy']['script-src'] ), 0, 6 ) ) ); ?>...</code>
+                            <code>script-src: <?php echo esc_html( implode( ' ', array_slice( explode( ' ', $preset['policy']['script-src'] ?? '' ), 0, 6 ) ) ); ?>...</code>
                         </div>
                     </div>
                 <?php endforeach; ?>

@@ -81,7 +81,9 @@ $keyword_explanations = [
         <?php foreach ( [ 'presets' => 'Quick Start', 'builder' => 'Custom Policy Builder', 'settings' => 'Settings', 'about' => 'About' ] as $tab => $label ) : ?>
             <a href="<?php echo esc_url( add_query_arg( 'tab', $tab, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo( $tab === 'builder' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
         <?php endforeach; ?>
-        <span class="acsp-preset-badge <?php echo esc_attr( $current_preset ?: 'custom' ); ?>"><?php echo esc_html( $current_preset ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom' ); ?></span>
+        <span class="acsp-preset-badge <?php echo esc_attr( $current_preset ?: 'custom' ); ?>">
+            <?php echo esc_html( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom' ); ?>
+        </span>
     </h2>
 
     <div class="acsp-card" style="display: flex; gap: 20px;">
