@@ -26,7 +26,7 @@ define( 'ACSP_VER', '1.0.3' );
  * ----------------------------------------------------------------- */
 require_once ACSP_DIR . 'includes/acsp-helpers.php';
 require_once ACSP_DIR . 'includes/acsp-preset-data.php';
-require_once ACSP_DIR . 'includes/class-acsp-core.php';
+require_once ACSP_DIR . 'includes/acsp-core-class.php';
 require_once ACSP_DIR . 'includes/acsp-register.php';
 require_once ACSP_DIR . 'includes/acsp-ajax-rest.php';
 require_once ACSP_DIR . 'includes/acsp-force-custom.php';
