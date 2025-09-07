@@ -1,6 +1,8 @@
 <?php
 /**
  * Presets identical to original.
+ *
+ * @package aCSP-Builder
  */
 function acsp_get_presets() {
 	return array(

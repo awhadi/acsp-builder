@@ -1,6 +1,14 @@
 <?php
 /**
- * Allowed CSP directives for sanitisation.
+ * Helper utilities for CSP directive handling.
+ *
+ * @package aCSP-Builder
+ */
+
+/**
+ * Return the list of CSP directives this plugin supports.
+ *
+ * @return string[]
  */
 function acsp_allowed_directives() {
 	return array(
@@ -22,7 +30,10 @@ function acsp_allowed_directives() {
 }
 
 /**
- * Sanitise policy array .
+ * Sanitise a policy array coming from the form.
+ *
+ * @param mixed $input Raw value from the option/form.
+ * @return string[]     Sanitised directive => value pairs.
  */
 function acsp_sanitize_policy( $input ) {
 	$sanitized = array();

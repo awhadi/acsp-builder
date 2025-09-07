@@ -1,49 +1,57 @@
 <?php
 /**
  * About tab – markup only
+ *
+ * @package aCSP
  */
+
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( 'Unauthorized user' );
 }
 
-$tab            = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets';
+$active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'presets'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $current_preset = get_option( 'acsp_current_preset', '' );
 
-$plugins = get_transient( 'acsp_my_plugins' );
-if ( false === $plugins ) {
+$plugin_list = get_transient( 'acsp_my_plugins' );
+if ( false === $plugin_list ) {
 	$resp = wp_remote_get( 'https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[author]=amirawhadi&request[per_page]=20' );
 	if ( ! is_wp_error( $resp ) && 200 === wp_remote_retrieve_response_code( $resp ) ) {
-		$body    = json_decode( wp_remote_retrieve_body( $resp ), true );
-		$plugins = $body['plugins'] ?? array();
-		set_transient( 'acsp_my_plugins', $plugins, 12 * HOUR_IN_SECONDS );
+		$body        = json_decode( wp_remote_retrieve_body( $resp ), true );
+		$plugin_list = $body['plugins'] ?? array();
+		set_transient( 'acsp_my_plugins', $plugin_list, 12 * HOUR_IN_SECONDS );
 	} else {
-		$plugins = array();
+		$plugin_list = array();
 	}
 }
 ?>
 
 <div class="wrap">
 	<h1>a Content-Security-Policy (CSP) Builder</h1>
+	<?php
+	$nav_tabs = array(
+		'presets'  => 'Quick Start',
+		'builder'  => 'Custom Policy Builder',
+		'settings' => 'Settings',
+		'about'    => 'About',
+	);
+	?>
 	<h2 class="nav-tab-wrapper">
-		<?php
-		$tabs = array(
-			'presets'  => 'Quick Start',
-			'builder'  => 'Custom Policy Builder',
-			'settings' => 'Settings',
-			'about'    => 'About',
-		);
-		foreach ( $tabs as $slug => $label ) :
-			$url = add_query_arg(
-				array(
-					'page' => 'acsp-builder',
-					'tab'  => $slug,
-				),
-				admin_url( 'admin.php' )
+		<?php foreach ( $nav_tabs as $nav_tab => $label ) : ?>
+			<a href="
+			<?php
+			echo esc_url(
+				add_query_arg(
+					array(
+						'page' => 'acsp-builder',
+						'tab'  => $nav_tab,
+					),
+					admin_url( 'admin.php' )
+				)
 			);
 			?>
-			<a href="<?php echo esc_url( $url ); ?>" class="nav-tab <?php echo $slug === $tab ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
+						" class="nav-tab <?php echo ( $nav_tab === $active_tab ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
 		<?php endforeach; ?>
-		<span class="acsp-preset-badge <?php echo esc_attr( $current_preset ?: 'custom' ); ?>">
+		<span class="acsp-preset-badge <?php echo esc_attr( $current_preset ? $current_preset : 'custom' ); ?>">
 			<?php echo esc_html( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom' ); ?>
 		</span>
 	</h2>
@@ -82,8 +90,8 @@ if ( false === $plugins ) {
 
 			<div class="acsp-card">
 				<h3>My Other Plugins</h3>
-				<?php if ( $plugins ) : ?>
-					<?php foreach ( $plugins as $p ) : ?>
+				<?php if ( $plugin_list ) : ?>
+					<?php foreach ( $plugin_list as $p ) : ?>
 						<div class="acsp-plugin-card">
 							<h4><?php echo esc_html( $p['name'] ); ?></h4>
 							<p><?php echo wp_kses_post( wp_trim_words( $p['short_description'], 16 ) ); ?></p>

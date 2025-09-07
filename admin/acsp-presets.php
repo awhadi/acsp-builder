@@ -1,7 +1,10 @@
 <?php
 /**
  * Quick-start presets tab.
+ *
+ * @package aCSP-Builder
  */
+
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( 'Unauthorized user' );
 }
@@ -31,14 +34,15 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 
 	<h2 class="nav-tab-wrapper">
 		<?php
-		foreach ( array(
+		$tab_items = array(
 			'presets'  => 'Quick Start',
 			'builder'  => 'Custom Policy Builder',
 			'settings' => 'Settings',
 			'about'    => 'About',
-		) as $tab => $label ) :
+		);
+		foreach ( $tab_items as $tab_key => $label ) :
 			?>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', $tab, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo( $tab === 'presets' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
+			<a href="<?php echo esc_url( add_query_arg( 'tab', $tab_key, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo( 'presets' === $tab_key ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
 		<?php endforeach; ?>
 		<span class="acsp-preset-badge <?php echo esc_attr( $preset_class ); ?>">
 			<?php echo esc_html( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom' ); ?>
@@ -50,7 +54,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 		<div class="acsp-card">
 			<h2>🌐 Raw HTTP Response Header (as sent to the browser)</h2>
 			<?php
-			$mode            = get_option( 'acsp_mode', 'reject' );
+			$mode_value      = get_option( 'acsp_mode', 'reject' );
 			$nonce           = defined( 'ACSP_NONCE' ) ? ACSP_NONCE : '';
 			$policy_arr      = get_option( 'acsp_policy', array() );
 			$report_endpoint = get_option( 'acsp_report_endpoint', '' );
@@ -92,7 +96,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 			}
 
 			if ( ! empty( $directives ) ) {
-				$header_name  = ( 'report' === $mode ) ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy';
+				$header_name  = ( 'report' === $mode_value ) ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy';
 				$header_value = implode( '; ', $directives );
 				echo '<pre style="background:#2d3748;color:#e2e8f0;padding:16px;border-radius:6px;font-family:Menlo,Consolas,monospace;font-size:13px;line-height:1.4;overflow-x:auto;">';
 				echo esc_html( $header_name . ': ' . $header_value );
@@ -110,24 +114,28 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 
 			<div class="acsp-presets">
 				<?php foreach ( acsp_get_presets() as $key => $preset ) : ?>
-					<div class="acsp-preset-card <?php echo( $current_preset === $key ? 'active' : '' ); ?>">
+					<div class="acsp-preset-card <?php echo( 'presets' === $key ? 'active' : '' ); ?>">
 						<h3>
 							<?php
-							echo array(
-								'relaxed'  => '🟢',
-								'balanced' => '🟡',
-								'strict'   => '🔴',
-							)[ $key ] ?? '🔘';
+							echo esc_html(
+								array(
+									'relaxed'  => '🟢',
+									'balanced' => '🟡',
+									'strict'   => '🔴',
+								)[ $key ] ?? '🔘'
+							);
 							?>
 							<?php echo esc_html( $preset['name'] ); ?>
 						</h3>
 						<span class="level <?php echo esc_attr( $key ); ?>">
 							<?php
-							echo array(
-								'relaxed'  => 'Beginner',
-								'balanced' => 'Intermediate',
-								'strict'   => 'Advanced',
-							)[ $key ] ?? '';
+							echo esc_html(
+								array(
+									'relaxed'  => 'Beginner',
+									'balanced' => 'Intermediate',
+									'strict'   => 'Advanced',
+								)[ $key ] ?? ''
+							);
 							?>
 						</span>
 						<p class="description"><?php echo esc_html( $preset['description'] ?? '' ); ?></p>
@@ -159,8 +167,8 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 							)
 						);
 						?>
-									" class="button <?php echo( $current_preset === $key ? 'disabled' : ( 'balanced' === $key ? 'button-primary' : 'button-secondary' ) ); ?>" <?php echo( $current_preset === $key ? 'style="opacity:0.5;pointer-events:none;"' : '' ); ?>>
-							<?php echo( $current_preset === $key ? '✓ Currently Active' : 'Apply ' . esc_html( $preset['name'] ) ); ?>
+									" class="button <?php echo( 'presets' === $key ? 'disabled' : ( 'balanced' === $key ? 'button-primary' : 'button-secondary' ) ); ?>" <?php echo( 'presets' === $key ? 'style="opacity:0.5;pointer-events:none;"' : '' ); ?>>
+							<?php echo( 'presets' === $key ? '✓ Currently Active' : 'Apply ' . esc_html( $preset['name'] ) ); ?>
 						</a>
 
 						<div class="acsp-current-policy">

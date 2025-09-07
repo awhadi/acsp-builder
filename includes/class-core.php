@@ -1,23 +1,50 @@
 <?php
+/**
+ * CSP engine – everything that used to live in the huge class.
+ *
+ * @package aCSP-Builder
+ */
+
 namespace aCSP;
 
 /**
- * CSP engine – everything that used to live in the huge class.
+ * Core CSP handler – sends headers, injects nonces, buffers output.
  */
 final class Core {
 
+	/**
+	 * Single instance.
+	 *
+	 * @var self|null
+	 */
 	private static $instance = null;
 
-	/** @var bool */
+	/**
+	 * Whether nonces are enabled.
+	 *
+	 * @var bool
+	 */
 	private $nonce_enabled;
 
-	/** @var array */
+	/**
+	 * Parsed policy array.
+	 *
+	 * @var array
+	 */
 	private $policy_options;
 
-	/** @var string reject|report */
+	/**
+	 * Mode: reject | report.
+	 *
+	 * @var string
+	 */
 	private $mode;
 
-	/* -------------------------------------------------------------- */
+	/**
+	 * Initialise (or fetch) the singleton.
+	 *
+	 * @return self
+	 */
 	public static function init() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -25,6 +52,9 @@ final class Core {
 		return self::$instance;
 	}
 
+	/**
+	 * Set up properties and hooks.
+	 */
 	private function __construct() {
 		$this->nonce_enabled  = (bool) get_option( 'acsp_add_dynamic_nonce', 1 );
 		$this->policy_options = get_option( 'acsp_policy', array() );
@@ -33,6 +63,9 @@ final class Core {
 		$this->hooks();
 	}
 
+	/**
+	 * Register all WordPress hooks.
+	 */
 	private function hooks() {
 		add_action( 'init', array( $this, 'initialize_nonce' ) );
 		add_action( 'wp_head', array( $this, 'output_csp_meta_tag' ), 1 );
@@ -48,13 +81,19 @@ final class Core {
 		add_action( 'init', array( $this, 'refresh_nonce_in_policy' ) );
 	}
 
-	/* -------------------------------------------------------------- */
+	/**
+	 * Create the cryptographic nonce if it does not exist.
+	 */
 	public function initialize_nonce() {
 		if ( ! defined( 'ACSP_NONCE' ) ) {
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- benign, used only for CSP nonce.
 			define( 'ACSP_NONCE', base64_encode( random_bytes( 16 ) ) );
 		}
 	}
 
+	/**
+	 * Output CSP as meta tag if the option is enabled.
+	 */
 	public function output_csp_meta_tag() {
 		if ( ! get_option( 'acsp_enable_meta_tag', 0 ) ) {
 			return;
@@ -68,6 +107,9 @@ final class Core {
 		}
 	}
 
+	/**
+	 * Send CSP HTTP header.
+	 */
 	public function send_csp_header() {
 		if ( empty( array_filter( $this->policy_options ) ) ) {
 			return;
@@ -84,6 +126,11 @@ final class Core {
 		}
 	}
 
+	/**
+	 * Decide whether a CSP header/tag should be produced.
+	 *
+	 * @return bool
+	 */
 	private function should_output_csp() {
 		$current_preset = get_option( 'acsp_current_preset', '' );
 		if ( ! empty( $current_preset ) ) {
@@ -99,6 +146,9 @@ final class Core {
 		return false;
 	}
 
+	/**
+	 * Replace [NONCE] placeholder with the real nonce if necessary.
+	 */
 	public function refresh_nonce_in_policy() {
 		if ( ! defined( 'ACSP_NONCE' ) || ! $this->should_output_csp() ) {
 			return;
@@ -117,7 +167,12 @@ final class Core {
 		}
 	}
 
-	/* -------------------------------------------------------------- */
+	/**
+	 * Build the complete CSP string.
+	 *
+	 * @param bool $for_header Generate for HTTP header (adds Report-To).
+	 * @return string
+	 */
 	public function generate_csp_policy( $for_header = true ) {
 		$directives = array();
 		if ( empty( array_filter( $this->policy_options ) ) ) {
@@ -175,7 +230,14 @@ final class Core {
 		return implode( '; ', $policy );
 	}
 
-	/* -------------------------------------------------------------- */
+	/**
+	 * Add nonce attribute to <script> tags.
+	 *
+	 * @param string $tag    Original tag markup.
+	 * @param string $handle Script handle (unused).
+	 * @param string $src    Script source (unused).
+	 * @return string
+	 */
 	public function inject_nonce_to_scripts( $tag, $handle, $src ) {
 		if ( defined( 'ACSP_NONCE' ) && $src && false === strpos( $tag, ' nonce=' ) ) {
 			$tag = str_replace( '<script', '<script nonce="' . ACSP_NONCE . '"', $tag );
@@ -183,6 +245,14 @@ final class Core {
 		return $tag;
 	}
 
+	/**
+	 * Add nonce attribute to <link> tags for stylesheets.
+	 *
+	 * @param string $tag    Original tag markup.
+	 * @param string $handle Style handle (unused).
+	 * @param string $src    Style source (unused).
+	 * @return string
+	 */
 	public function inject_nonce_to_styles( $tag, $handle, $src ) {
 		if ( defined( 'ACSP_NONCE' ) && $src && false === strpos( $tag, ' nonce=' ) ) {
 			$tag = str_replace( '<link', '<link nonce="' . ACSP_NONCE . '"', $tag );
@@ -190,19 +260,30 @@ final class Core {
 		return $tag;
 	}
 
-	/* -------------------------------------------------------------- */
+	/**
+	 * Start output buffering to catch inline scripts/styles.
+	 */
 	public function start_output_buffering() {
 		if ( defined( 'ACSP_NONCE' ) ) {
 			ob_start( array( $this, 'inject_nonce_to_inline_code' ) );
 		}
 	}
 
+	/**
+	 * Flush the output buffer.
+	 */
 	public function end_output_buffering() {
 		if ( defined( 'ACSP_NONCE' ) && ob_get_length() ) {
 			ob_end_flush();
 		}
 	}
 
+	/**
+	 * Inject nonce into inline <script> and <style> elements.
+	 *
+	 * @param string $buffer Full HTML page.
+	 * @return string
+	 */
 	public function inject_nonce_to_inline_code( $buffer ) {
 		if ( ! defined( 'ACSP_NONCE' ) ) {
 			return $buffer;
@@ -226,7 +307,11 @@ final class Core {
 		return $buffer;
 	}
 
-	/* -------------------------------------------------------------- */
+	/**
+	 * Return the current nonce.
+	 *
+	 * @return string
+	 */
 	public static function get_nonce() {
 		return defined( 'ACSP_NONCE' ) ? ACSP_NONCE : '';
 	}

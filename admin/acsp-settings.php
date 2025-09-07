@@ -1,7 +1,10 @@
 <?php
 /**
  * Settings tab (former huge settings section).
+ *
+ * @package aCSP-Builder
  */
+
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( 'Unauthorized user' );
 }
@@ -17,20 +20,21 @@ settings_errors( 'acsp_settings' );
 
 	<h2 class="nav-tab-wrapper">
 		<?php
-		foreach ( array(
+		$nav_tabs = array(
 			'presets'  => 'Quick Start',
 			'builder'  => 'Custom Policy Builder',
 			'settings' => 'Settings',
 			'about'    => 'About',
-		) as $tab => $label ) :
+		);
+		foreach ( $nav_tabs as $nav_tab => $label ) :
 			?>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', $tab, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo( $tab === 'settings' ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
+			<a href="<?php echo esc_url( add_query_arg( 'tab', $nav_tab, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo ( 'settings' === $nav_tab ) ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
 		<?php endforeach; ?>
-		<span class="acsp-preset-badge <?php echo esc_attr( get_option( 'acsp_current_preset' ) ?: 'custom' ); ?>">
-			<?php
+		<span class="acsp-preset-badge <?php echo esc_attr( get_option( 'acsp_current_preset' ) ? get_option( 'acsp_current_preset' ) : 'custom' ); ?>">			
+		<?php
 			$cp = get_option( 'acsp_current_preset' );
 			echo esc_html( $cp && isset( acsp_get_presets()[ $cp ] ) ? acsp_get_presets()[ $cp ]['name'] : 'Custom' );
-			?>
+		?>
 		</span>
 	</h2>
 
