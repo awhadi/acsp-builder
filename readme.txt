@@ -1,8 +1,8 @@
 === aCSP Builder – Bullet-Proof Content Security Policy in One Click ===
-Contributors: amirawhadi
+Contributors: aStudio, Amir Khosro Awhadi
 Tags: CSP, security, content security policy, nonce, XSS protection, headers
 Requires at least: 5.8
-Tested up to: 6.6
+Tested up to: 6.8.2
 Requires PHP: 7.4
 Stable tag: 1.0.3
 License: GPL-2.0+
@@ -23,20 +23,20 @@ aCSP Builder creates, tests and enforces a modern **Content-Security-Policy** wi
 **One-click features**  
 *  Automatic `nonce-*` injection for every enqueued script & stylesheet  
 *  Hash-based allow-list for inline snippets (sha256/sha512)  
-*  Live header preview before you save  
-*  Report-Only mode – test without breaking production  
+*  Live header preview, so you can see your header directly on the plugin
+*  Report-Only mode – test without breaking production or just disable the plugin 
 *  Built-in violation logger / report-uri endpoint  
 *  Export / import JSON presets – move settings from staging to live in seconds  
 *  Works with page-builders (Elementor, Beaver, Divi, Gutenberg, WPBakery) and CDN plugins out-of-the-box  
 *  No ads, no tracking, no “Pro” upsell – 100 % free for personal & enterprise use
 
 **Goodbye console errors, hello security headers**  
-Install → choose a preset → hit **Save**.  
+Install → choose a preset → hit **Apply**.  
 aCSP Builder handles the rest.
 
 == Installation ==
 
-1. Upload the plugin files to `/wp-content/plugins/acsp-builder/` or install through the WordPress plugins screen.  
+1. Upload the plugin files to `/wp-content/plugins/aCSP-Builder/` or install through the WordPress plugins screen.  
 2. Activate the plugin.  
 3. Navigate to **Admin → aCSP Builder** and pick a preset (or build your own policy).  
 4. Switch from *Report-Only* to *Enforce* when you are confident the policy is clean.
@@ -56,7 +56,7 @@ Yes. Every directive has a checkbox list of common sources (Google Fonts, Analyt
 Absolutely. Nonces are generated during page render, so the *value* changes, but the *placeholder* is inserted through output buffering – compatible with WP Rocket, W3 Total Cache, LiteSpeed, SiteGround Optimizer, etc.
 
 = Is this plugin really free? =  
-Yes. If it saves you a security audit or a week of Stack-Overflow, [buy me a coffee](https://www.buymeacoffee.com/amirawhadi) – caffeine keeps the updates coming.
+Yes. If it saves you a security audit or a week of Stack-Overflow, [buy me a coffee](https://buymeacoffee.com/awhadikf) – caffeine keeps the updates coming.
 
 == Screenshots ==
 

@@ -85,7 +85,7 @@ if ( false === $plugin_list ) {
 			<div class="acsp-donation-box">
 				<h3>☕ Like what you see?</h3>
 				<p>Your caffeine donation = faster updates, new features, bug-fixes.</p>
-				<a class="button button-primary" href="https://www.buymeacoffee.com/amirawhadi" target="_blank" rel="noopener">Buy me a coffee</a>
+				<a class="button button-primary" href="https://buymeacoffee.com/awhadikf" target="_blank" rel="noopener">Buy me a coffee</a>
 			</div>
 
 			<div class="acsp-card">
