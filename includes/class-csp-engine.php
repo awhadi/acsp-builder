@@ -8,9 +8,9 @@
 namespace aCSP;
 
 /**
- * Core CSP handler – sends headers, injects nonces, buffers output.
+ * CSP Engine handler – sends headers, injects nonces, buffers output.
  */
-final class Core {
+final class CSP_Engine {
 
 	/**
 	 * Single instance.
