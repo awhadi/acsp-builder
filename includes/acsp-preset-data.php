@@ -4,6 +4,12 @@
  *
  * @package aCSP-Builder
  */
+
+/**
+ * Return the built-in policy presets.
+ *
+ * @return array[]
+ */
 function acsp_get_presets() {
 	return array(
 		'relaxed'  => array(
