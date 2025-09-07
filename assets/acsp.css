@@ -335,11 +335,12 @@
 /* ---------- donation sticky box ---------- */
 .acsp-donation-box{
 	position:sticky;
-	top:20px;
+	top:0;
 	background:linear-gradient(135deg, var(--acsp-primary) 0%, var(--acsp-primary-hover) 100%);
 	color:#fff;
 	padding:30px;
 	border-radius:8px;
+	margin-top: 25px;
 	box-shadow:0 8px 20px rgba(0,0,0,.15);
 	text-align:center;
 }
