@@ -81,9 +81,7 @@ $keyword_explanations = array(
 	<h1><?php esc_html_e( 'a Content-Security-Policy (CSP) Builder', 'aCSP' ); ?></h1>
 
 	<?php
-	// phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited -- local scope only.
 	$tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets'; // Input var okay.
-	// phpcs:enable WordPress.WP.GlobalVariablesOverride.Prohibited
 	?>
 
 	<h2 class="nav-tab-wrapper">

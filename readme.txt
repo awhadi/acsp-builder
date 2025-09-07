@@ -92,4 +92,4 @@ Maintenance release: zero functional changes, full WordPress Coding Standards co
 
 == Credits ==
 
-Created by [Amir Khosro Awhadi](https://profiles.wordpress.org/amirawhadi/) – security should be plug-and-play, not a week of Stack-Overflow.
+Created by [Amir Khosro Awhadi](https://profiles.wordpress.org/awhadi/) – security should be plug-and-play, not a week of Stack-Overflow.
