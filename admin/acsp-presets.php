@@ -15,7 +15,7 @@ wp_enqueue_script( 'acsp-admin' );
 $current_preset = get_option( 'acsp_current_preset', '' );
 ?>
 <div class="wrap">
-	<h1>a Content-Security-Policy (CSP) Builder</h1>
+	<h1><?php esc_html_e( 'a Content-Security-Policy (CSP) Builder', 'acsp' ); ?></h1>
 
 	<?php
 	$preset_names = array(
@@ -42,7 +42,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 		);
 		foreach ( $tab_items as $tab_key => $label ) :
 			?>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', $tab_key, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo( 'presets' === $tab_key ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
+			<a href="<?php echo esc_url( add_query_arg( 'tab', $tab_key, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo ( 'presets' === $tab_key ) ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
 		<?php endforeach; ?>
 		<span class="acsp-preset-badge <?php echo esc_attr( $preset_class ); ?>">
 			<?php echo esc_html( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom' ); ?>
@@ -52,7 +52,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 	<div style="margin-top:20px;">
 		<!-- Live header preview -->
 		<div class="acsp-card">
-			<h2>🌐 Raw HTTP Response Header (as sent to the browser)</h2>
+			<h2><?php esc_html_e( '🌐 Raw HTTP Response Header (as sent to the browser)', 'acsp' ); ?></h2>
 			<?php
 			$mode_value      = get_option( 'acsp_mode', 'reject' );
 			$nonce           = defined( 'ACSP_NONCE' ) ? ACSP_NONCE : '';
@@ -102,19 +102,19 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 				echo esc_html( $header_name . ': ' . $header_value );
 				echo '</pre>';
 			} else {
-				echo '<p style="color:#666;">No CSP header is currently being sent.</p>';
+				echo '<p style="color:#666;">' . esc_html__( 'No CSP header is currently being sent.', 'acsp' ) . '</p>';
 			}
 			?>
 		</div>
 
 		<!-- Preset cards -->
 		<div class="acsp-card">
-			<h2>Quick Start Presets</h2>
-			<p style="font-size:16px;color:#555;margin-bottom:30px;">Choose a preset below to quickly configure your CSP. You can then customize it further in the Custom Policy Builder tab.</p>
+			<h2><?php esc_html_e( 'Quick Start Presets', 'acsp' ); ?></h2>
+			<p style="font-size:16px;color:#555;margin-bottom:30px;"><?php esc_html_e( 'Choose a preset below to quickly configure your CSP. You can then customize it further in the Custom Policy Builder tab.', 'acsp' ); ?></p>
 
 			<div class="acsp-presets">
 				<?php foreach ( acsp_get_presets() as $key => $preset ) : ?>
-					<div class="acsp-preset-card <?php echo( 'presets' === $key ? 'active' : '' ); ?>">
+					<div class="acsp-preset-card <?php echo ( $key === $current_preset ) ? 'active' : ''; ?>">
 						<h3>
 							<?php
 							echo esc_html(
@@ -158,7 +158,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 							wp_nonce_url(
 								add_query_arg(
 									array(
-										'tab' => 'presets',
+										'tab'               => 'presets',
 										'acsp_apply_preset' => $key,
 									)
 								),
@@ -167,12 +167,12 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 							)
 						);
 						?>
-									" class="button <?php echo( 'presets' === $key ? 'disabled' : ( 'balanced' === $key ? 'button-primary' : 'button-secondary' ) ); ?>" <?php echo( 'presets' === $key ? 'style="opacity:0.5;pointer-events:none;"' : '' ); ?>>
-							<?php echo( 'presets' === $key ? '✓ Currently Active' : 'Apply ' . esc_html( $preset['name'] ) ); ?>
+									" class="button <?php echo ( $key === $current_preset ) ? 'disabled' : ( 'balanced' === $key ? 'button-primary' : 'button-secondary' ); ?>" <?php echo ( $key === $current_preset ) ? 'style="opacity:0.5;pointer-events:none;"' : ''; ?>>
+							<?php echo ( $key === $current_preset ) ? '✓ Currently Active' : 'Apply ' . esc_html( $preset['name'] ); ?>
 						</a>
 
 						<div class="acsp-current-policy">
-							<h4>Policy Preview:</h4>
+							<h4><?php esc_html_e( 'Policy Preview:', 'acsp' ); ?></h4>
 							<code>script-src: <?php echo esc_html( implode( ' ', array_slice( explode( ' ', $preset['policy']['script-src'] ?? '' ), 0, 6 ) ) ); ?>...</code>
 						</div>
 					</div>
@@ -181,7 +181,7 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 
 			<?php if ( ! $current_preset ) : ?>
 				<div class="notice notice-info" style="margin-top:20px;">
-					<p><strong>ℹ️ No preset active</strong> custom policy is currently in effect. </p>
+					<p><strong><?php esc_html_e( 'ℹ️ No preset active', 'acsp' ); ?></strong> <?php esc_html_e( 'custom policy is currently in effect.', 'acsp' ); ?></p>
 				</div>
 			<?php endif; ?>
 		</div>

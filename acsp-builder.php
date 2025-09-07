@@ -30,7 +30,7 @@ define( 'ACSP_VER', '1.0.4' );
  * ------------------------------------------------------------------ */
 require_once ACSP_DIR . 'includes/acsp-helpers.php';
 require_once ACSP_DIR . 'includes/acsp-preset-data.php';
-require_once ACSP_DIR . 'includes/class-core.php';
+require_once ACSP_DIR . 'includes/class-csp-engine.php';
 require_once ACSP_DIR . 'includes/acsp-register.php';
 require_once ACSP_DIR . 'includes/acsp-ajax-rest.php';
 require_once ACSP_DIR . 'includes/acsp-force-custom.php';
@@ -42,7 +42,7 @@ add_action( 'plugins_loaded', 'acsp_boot' );
  * @return void
  */
 function acsp_boot() {
-	\aCSP\Core::init();
+	\aCSP\CSP_Engine::init();
 }
 
 /*
