@@ -47,7 +47,7 @@ function acsp_ajax_test_report() {
 // ------------------------------------------------------------------
 // JSON EXPORT (triggered in settings tab)
 // ------------------------------------------------------------------
-add_action( 'admin_init', 'acsp_handle_export' );
+add_action( 'admin_post_acsp_export_json', 'acsp_handle_export' );
 /**
  * Stream a JSON file that contains current policy & settings.
  *

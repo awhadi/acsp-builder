@@ -30,7 +30,7 @@ settings_errors( 'acsp_settings' );
 			?>
 			<a href="<?php echo esc_url( add_query_arg( 'tab', $nav_tab, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo ( 'settings' === $nav_tab ) ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
 		<?php endforeach; ?>
-		<span class="acsp-preset-badge <?php echo esc_attr( get_option( 'acsp_current_preset' ) ? get_option( 'acsp_current_preset' ) : 'custom' ); ?>">			
+		<span class="acsp-preset-badge <?php echo esc_attr( get_option( 'acsp_current_preset' ) ? get_option( 'acsp_current_preset' ) : 'custom' ); ?>">
 		<?php
 			$cp = get_option( 'acsp_current_preset' );
 			echo esc_html( $cp && isset( acsp_get_presets()[ $cp ] ) ? acsp_get_presets()[ $cp ]['name'] : 'Custom' );
@@ -161,22 +161,37 @@ settings_errors( 'acsp_settings' );
 			</form>
 		</div>
 
+		<!-- -------------------------------------------------------------------------
+		     EXPORT / IMPORT
+		     ------------------------------------------------------------------------- -->
 		<div style="width:320px;">
 			<div class="acsp-card">
 				<h3>Export / Import Preset</h3>
 
-				<form method="post">
+				<!-- EXPORT -->
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="acsp_export_json">
+					<?php wp_nonce_field( 'acsp_export_json_action', 'acsp_export_json_nonce' ); ?>
 					<p><strong>Export</strong></p>
-					<p style="font-size:13px;margin-bottom:12px;">Download a JSON file with the current policy & all settings.</p>
+					<p style="font-size:13px;margin-bottom:12px;">
+						Download a JSON file with the current policy & all settings.
+					</p>
 					<?php submit_button( 'Download JSON', 'primary', 'acsp_export_json', false ); ?>
 				</form>
 
 				<hr style="margin:20px 0;">
 
-				<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<!-- IMPORT -->
+				<form method="post" enctype="multipart/form-data"
+					  action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="acsp_import_json">
-					<input type="file" name="acsp_import_file" accept=".json" required style="width:100%;margin-bottom:10px;">
 					<?php wp_nonce_field( 'acsp_import_json_action', 'acsp_import_json_nonce' ); ?>
+					<p><strong>Import</strong></p>
+					<p style="font-size:13px;margin-bottom:12px;">
+						Upload a previously exported JSON file.
+					</p>
+					<input type="file" name="acsp_import_file" accept=".json" required
+						   style="width:100%;margin-bottom:10px;">
 					<?php submit_button( 'Upload & Import', 'secondary', 'acsp_import_json', false ); ?>
 				</form>
 			</div>
