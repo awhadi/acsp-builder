@@ -3,7 +3,7 @@
  * Plugin Name: aCSP Builder
  * Plugin URI:  https://plugins.awhadi.online
  * Description: The FIRST WordPress plugin that automatically adds cryptographic nonces to every script & stylesheet, lets you hash-lock inline code, and builds a bullet-proof Content Security Policy in one click.
- * Version:     1.0.6
+ * Version:     1.0.7
  * Requires WP: 5.8
  * Requires PHP:7.4
  * Text Domain: aCSP-Builder
@@ -21,19 +21,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'ACSP_FILE', __FILE__ );
 define( 'ACSP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ACSP_URL', plugin_dir_url( __FILE__ ) );
-define( 'ACSP_VER', '1.0.6' );
+define( 'ACSP_VER', '1.0.7' );
 
 /*
  * ------------------------------------------------------------------
  * Bootstrap
  *
- * ------------------------------------------------------------------ */
+ * ------------------------------------------------------------------
+ */
 require_once ACSP_DIR . 'includes/acsp-helpers.php';
 require_once ACSP_DIR . 'includes/acsp-preset-data.php';
 require_once ACSP_DIR . 'includes/class-csp-engine.php';
 require_once ACSP_DIR . 'includes/acsp-register.php';
 require_once ACSP_DIR . 'includes/acsp-ajax-rest.php';
 require_once ACSP_DIR . 'includes/acsp-force-custom.php';
+
 
 add_action( 'plugins_loaded', 'acsp_boot' );
 /**
@@ -49,7 +51,8 @@ function acsp_boot() {
  * ------------------------------------------------------------------
  * Admin menu & tabs
  *
- * ------------------------------------------------------------------ */
+ * ------------------------------------------------------------------
+ */
 add_action( 'admin_menu', 'acsp_admin_menu' );
 /**
  * Register the top-level menu.
@@ -75,7 +78,13 @@ function acsp_admin_menu() {
  */
 function acsp_router() {
 	$tabs = array( 'presets', 'builder', 'settings', 'about' );
-	$tab  = isset( $_GET['tab'] ) && in_array( sanitize_key( wp_unslash( $_GET['tab'] ) ), $tabs, true ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'presets'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+	// Verify the tab nonce first.
+	if ( empty( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'acsp_tab_' . ( isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'presets' ) ) ) {
+		wp_die( 'Security check failed.' );
+	}
+
+	$tab = isset( $_GET['tab'] ) && in_array( sanitize_key( wp_unslash( $_GET['tab'] ) ), $tabs, true ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'presets';
 
 	$map = array(
 		'presets'  => ACSP_DIR . 'admin/acsp-presets.php',
@@ -93,7 +102,8 @@ function acsp_router() {
  * ------------------------------------------------------------------
  * CSS + JS  (only on our pages)
  *
- * ------------------------------------------------------------------ */
+ * ------------------------------------------------------------------
+ */
 add_action( 'admin_enqueue_scripts', 'acsp_assets' );
 /**
  * Enqueue admin assets.
@@ -112,7 +122,8 @@ function acsp_assets( $hook_suffix ) {
 /*
  * ------------------------------------------------------------------
  * Activation / uninstall
- * ------------------------------------------------------------------ */
+ * ------------------------------------------------------------------
+ */
 register_activation_hook( ACSP_FILE, 'acsp_activate' );
 /**
  * Seed default options on activation.

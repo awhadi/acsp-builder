@@ -9,6 +9,14 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( 'Unauthorized user' );
 }
 
+// --------- nonce check ---------
+$nonce_action = 'acsp_tab_settings';
+if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), $nonce_action ) ) {
+	wp_die( 'Security check failed.' );
+}
+$acsp_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets';
+// --------------------------------
+
 wp_enqueue_style( 'acsp-admin' );
 wp_enqueue_script( 'acsp-admin' );
 
@@ -27,9 +35,23 @@ settings_errors( 'acsp_settings' );
 			'about'    => 'About',
 		);
 		foreach ( $nav_tabs as $nav_tab => $label ) :
-			?>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', $nav_tab, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo ( 'settings' === $nav_tab ) ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
-		<?php endforeach; ?>
+			printf(
+				'<a href="%s" class="nav-tab %s">%s</a>',
+				esc_url(
+					add_query_arg(
+						array(
+							'page'     => 'acsp-builder',
+							'tab'      => $nav_tab,
+							'_wpnonce' => wp_create_nonce( 'acsp_tab_' . $nav_tab ),
+						),
+						admin_url( 'admin.php' )
+					)
+				),
+				( 'settings' === $nav_tab ) ? 'nav-tab-active' : '',
+				esc_html( $label )
+			);
+		endforeach;
+		?>
 		<span class="acsp-preset-badge <?php echo esc_attr( get_option( 'acsp_current_preset' ) ? get_option( 'acsp_current_preset' ) : 'custom' ); ?>">
 		<?php
 			$cp = get_option( 'acsp_current_preset' );
@@ -162,8 +184,8 @@ settings_errors( 'acsp_settings' );
 		</div>
 
 		<!-- -------------------------------------------------------------------------
-		     EXPORT / IMPORT
-		     ------------------------------------------------------------------------- -->
+			EXPORT / IMPORT
+			------------------------------------------------------------------------- -->
 		<div style="width:320px;">
 			<div class="acsp-card">
 				<h3>Export / Import Preset</h3>
@@ -183,7 +205,7 @@ settings_errors( 'acsp_settings' );
 
 				<!-- IMPORT -->
 				<form method="post" enctype="multipart/form-data"
-					  action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="acsp_import_json">
 					<?php wp_nonce_field( 'acsp_import_json_action', 'acsp_import_json_nonce' ); ?>
 					<p><strong>Import</strong></p>
@@ -191,7 +213,7 @@ settings_errors( 'acsp_settings' );
 						Upload a previously exported JSON file.
 					</p>
 					<input type="file" name="acsp_import_file" accept=".json" required
-						   style="width:100%;margin-bottom:10px;">
+							style="width:100%;margin-bottom:10px;">
 					<?php submit_button( 'Upload & Import', 'secondary', 'acsp_import_json', false ); ?>
 				</form>
 			</div>

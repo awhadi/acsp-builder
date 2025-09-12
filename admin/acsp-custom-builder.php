@@ -9,6 +9,14 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( 'Unauthorized user' );
 }
 
+// --------- nonce check ---------
+$nonce_action = 'acsp_tab_builder';
+if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), $nonce_action ) ) {
+	wp_die( 'Security check failed.' );
+}
+$acsp_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets';
+// --------------------------------
+
 wp_enqueue_style( 'acsp-admin' );
 wp_enqueue_script( 'acsp-admin' );
 
@@ -80,10 +88,6 @@ $keyword_explanations = array(
 <div class="wrap">
 	<h1><?php esc_html_e( 'a Content-Security-Policy (CSP) Builder', 'aCSP' ); ?></h1>
 
-	<?php
-	$tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets'; // Input var okay.
-	?>
-
 	<h2 class="nav-tab-wrapper">
 		<?php
 		foreach ( array(
@@ -92,9 +96,23 @@ $keyword_explanations = array(
 			'settings' => 'Settings',
 			'about'    => 'About',
 		) as $slug => $label ) :
-			?>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', $slug, admin_url( 'admin.php?page=acsp-builder' ) ) ); ?>" class="nav-tab <?php echo ( 'builder' === $slug ) ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
-		<?php endforeach; ?>
+			printf(
+				'<a href="%s" class="nav-tab %s">%s</a>',
+				esc_url(
+					add_query_arg(
+						array(
+							'page'     => 'acsp-builder',
+							'tab'      => $slug,
+							'_wpnonce' => wp_create_nonce( 'acsp_tab_' . $slug ),
+						),
+						admin_url( 'admin.php' )
+					)
+				),
+				( 'builder' === $slug ) ? 'nav-tab-active' : '',
+				esc_html( $label )
+			);
+		endforeach;
+		?>
 		<?php
 		$badge_preset = ( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom';
 		$badge_class  = $current_preset ? $current_preset : 'custom';

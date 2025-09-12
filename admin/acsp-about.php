@@ -9,8 +9,13 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( 'Unauthorized user' );
 }
 
-$active_tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'presets'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$current_preset = get_option( 'acsp_current_preset', '' );
+// --------- nonce check ---------
+$nonce_action = 'acsp_tab_about';
+if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), $nonce_action ) ) {
+	wp_die( 'Security check failed.' );
+}
+$acsp_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets';
+// --------------------------------
 
 $plugin_list = get_transient( 'acsp_my_plugins' );
 if ( false === $plugin_list ) {
@@ -42,15 +47,19 @@ if ( false === $plugin_list ) {
 			echo esc_url(
 				add_query_arg(
 					array(
-						'page' => 'acsp-builder',
-						'tab'  => $nav_tab,
+						'page'     => 'acsp-builder',
+						'tab'      => $nav_tab,
+						'_wpnonce' => wp_create_nonce( 'acsp_tab_' . $nav_tab ),
 					),
 					admin_url( 'admin.php' )
 				)
 			);
 			?>
-						" class="nav-tab <?php echo ( $nav_tab === $active_tab ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
+						" class="nav-tab <?php echo ( $nav_tab === $acsp_tab ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
 		<?php endforeach; ?>
+		<?php
+		$current_preset = get_option( 'acsp_current_preset', '' );
+		?>
 		<span class="acsp-preset-badge <?php echo esc_attr( $current_preset ? $current_preset : 'custom' ); ?>">
 			<?php echo esc_html( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom' ); ?>
 		</span>

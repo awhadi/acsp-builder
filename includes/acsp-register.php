@@ -83,32 +83,6 @@ function acsp_register_settings() {
 }
 
 // ------------------------------------------------------------------
-// REST endpoint for CSP reports.
-// ------------------------------------------------------------------
-add_action( 'rest_api_init', 'acsp_rest_report_endpoint' );
-
-/**
- * Register the public report collector.
- */
-function acsp_rest_report_endpoint() {
-	register_rest_route(
-		'acsp/v1',
-		'/report',
-		array(
-			'methods'             => 'POST',
-			'callback'            => function () {
-				$body = file_get_contents( 'php://input' );
-				// Debug: remove or replace with PSR logger in production.
-                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- intended for local debugging.
-				error_log( 'CSP Violation: ' . $body );
-				return new \WP_REST_Response( null, 204 );
-			},
-			'permission_callback' => '__return_true',
-		)
-	);
-}
-
-// ------------------------------------------------------------------
 // Activation defaults.
 // ------------------------------------------------------------------
 add_action( 'admin_init', 'acsp_maybe_set_defaults' );
@@ -135,6 +109,11 @@ add_action( 'admin_menu', 'acsp_submenus', 20 ); // After top-level is built.
 
 /**
  * Add individual submenu items for each tab.
+ *
+ * The links must keep the query-string so the nonce survives.
+ * add_submenu_page() accepts a FILE-NAME as the 5th parameter,
+ * but we can also pass a CALLABLE that already contains the
+ * query args we need – WP will still fire it.
  */
 function acsp_submenus() {
 	$tabs = array(
@@ -143,17 +122,19 @@ function acsp_submenus() {
 		'settings' => 'Settings',
 		'about'    => 'About',
 	);
+
 	foreach ( $tabs as $slug => $title ) {
 		add_submenu_page(
-			'acsp-builder',
-			$title,
-			$title,
-			'manage_options',
-			'acsp-builder&tab=' . $slug,
-			'acsp_router'
+			'acsp-builder',          // parent.
+			$title,                  // page title.
+			$title,                  // menu title.
+			'manage_options',        // cap.
+			'acsp-builder&tab=' . $slug . '&_wpnonce=' . wp_create_nonce( 'acsp_tab_' . $slug ),
+			'acsp_router'            // same renderer.
 		);
 	}
-	// Remove the auto-generated duplicate top entry.
+
+	// Remove the duplicate auto-generated top entry.
 	remove_submenu_page( 'acsp-builder', 'acsp-builder' );
 }
 
@@ -169,10 +150,38 @@ add_filter( 'plugin_action_links_' . plugin_basename( ACSP_FILE ), 'acsp_action_
  * @return string[]
  */
 function acsp_action_links( $links ) {
-	// Push both links to the front.
-	$config   = '<a href="' . esc_url( admin_url( 'admin.php?page=acsp-builder' ) ) . '">Config</a>';
-	$settings = '<a href="' . esc_url( admin_url( 'admin.php?page=acsp-builder&tab=settings' ) ) . '">Settings</a>';
+	// 1. Config  -> Presets tab.
+	$config = sprintf(
+		'<a href="%s">Config</a>',
+		esc_url(
+			add_query_arg(
+				array(
+					'page'     => 'acsp-builder',
+					'tab'      => 'presets',
+					'_wpnonce' => wp_create_nonce( 'acsp_tab_presets' ),
+				),
+				admin_url( 'admin.php' )
+			)
+		)
+	);
 
+	// 2. Settings -> Settings tab.
+	$settings = sprintf(
+		'<a href="%s">Settings</a>',
+		esc_url(
+			add_query_arg(
+				array(
+					'page'     => 'acsp-builder',
+					'tab'      => 'settings',
+					'_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ),
+				),
+				admin_url( 'admin.php' )
+			)
+		)
+	);
+
+	// Push them to the front of the links array.
 	array_unshift( $links, $config, $settings );
+
 	return $links;
 }

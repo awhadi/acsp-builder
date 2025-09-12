@@ -67,6 +67,10 @@ Yes. If it saves you a security audit or a week of Stack-Overflow, [buy me a cof
 5. About tab – helpful links and donation box (no upsells)
 
 == Changelog ==
+= 1.0.7 =
+* Fix 15 WordPress-Core PHPCS violations across acsp-builder.php, acsp-register.php, acsp-presets.php
+* Add missing nonce verification & proper sanitisation in admin routing
+* No functional changes; purely coding-standards compliance
 
 = 1.0.3 =
 * WordPress Coding Standards compliance (phpcs)  
