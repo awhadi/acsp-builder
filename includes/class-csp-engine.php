@@ -86,7 +86,6 @@ final class CSP_Engine {
 	 */
 	public function initialize_nonce() {
 		if ( ! defined( 'ACSP_NONCE' ) ) {
-			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- benign, used only for CSP nonce.
 			define( 'ACSP_NONCE', base64_encode( random_bytes( 16 ) ) );
 		}
 	}

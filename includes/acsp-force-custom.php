@@ -15,7 +15,7 @@ add_action( 'update_option_acsp_policy', 'acsp_maybe_switch_to_custom', 10, 3 );
  * @param mixed  $value      New option value.
  * @param string $option     Option name (unused).
  */
-function acsp_maybe_switch_to_custom( $old_value, $value, $option ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by hook signature.
+function acsp_maybe_switch_to_custom( $old_value, $value, $option ) {
 	if ( ! $value || ! is_array( $value ) ) {
 		return;
 	}

@@ -3,7 +3,7 @@
  * Plugin Name: aCSP Builder
  * Plugin URI:  https://plugins.awhadi.online
  * Description: The FIRST WordPress plugin that automatically adds cryptographic nonces to every script & stylesheet, lets you hash-lock inline code, and builds a bullet-proof Content Security Policy in one click.
- * Version:     1.0.7
+ * Version:     1.0.8
  * Requires WP: 5.8
  * Requires PHP:7.4
  * Text Domain: aCSP-Builder
@@ -21,25 +21,71 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'ACSP_FILE', __FILE__ );
 define( 'ACSP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ACSP_URL', plugin_dir_url( __FILE__ ) );
-define( 'ACSP_VER', '1.0.7' );
+define( 'ACSP_VER', '1.0.8' );
 
 /*
- * ------------------------------------------------------------------
- * Bootstrap
- *
+------------------------------------------------------------------
+ * Autoloader – loads files ONLY when needed, no re-declare errors.
  * ------------------------------------------------------------------
  */
-require_once ACSP_DIR . 'includes/acsp-helpers.php';
-require_once ACSP_DIR . 'includes/acsp-preset-data.php';
-require_once ACSP_DIR . 'includes/class-csp-engine.php';
-require_once ACSP_DIR . 'includes/acsp-register.php';
-require_once ACSP_DIR . 'includes/acsp-ajax-rest.php';
-require_once ACSP_DIR . 'includes/acsp-force-custom.php';
+add_action( 'plugins_loaded', 'acsp_autoload_register', 0 );
 
-
-add_action( 'plugins_loaded', 'acsp_boot' );
 /**
- * Fire up the engine.
+ * Register autoloader for plugin classes/functions.
+ *
+ * @return void
+ */
+function acsp_autoload_register() {
+	$map = array(
+		// Class => file basename (without .php).
+		'aCSP\CSP_Engine'             => 'class-csp-engine',
+		// Functions => file that contains them.
+		'acsp_sanitize_policy'        => 'acsp-helpers',
+		'acsp_allowed_directives'     => 'acsp-helpers',
+		'acsp_get_presets'            => 'acsp-preset-data',
+		'acsp_handle_export'          => 'acsp-ajax-rest',
+		'acsp_handle_import'          => 'acsp-ajax-rest',
+		'acsp_ajax_test_report'       => 'acsp-ajax-rest',
+		'acsp_preset_reset_handlers'  => 'acsp-ajax-rest',
+		'acsp_maybe_switch_to_custom' => 'acsp-force-custom',
+		'acsp_register_settings'      => 'acsp-register',
+		'acsp_maybe_set_defaults'     => 'acsp-register',
+		'acsp_submenus'               => 'acsp-register',
+		'acsp_action_links'           => 'acsp-register',
+	);
+
+	spl_autoload_register(
+		function ( $class_name ) use ( $map ) {
+			if ( isset( $map[ $class_name ] ) ) {
+				$file = ACSP_DIR . 'includes/' . $map[ $class_name ] . '.php';
+				if ( is_readable( $file ) ) {
+					require_once $file;
+				}
+				return;
+			}
+
+			foreach ( $map as $func => $basename ) {
+				if ( function_exists( $func ) ) {
+					continue;
+				}
+				$file = ACSP_DIR . 'includes/' . $basename . '.php';
+				if ( is_readable( $file ) ) {
+					require_once $file;
+				}
+			}
+		}
+	);
+}
+
+/*
+------------------------------------------------------------------
+ * Bootstrap the engine.
+ * ------------------------------------------------------------------
+ */
+add_action( 'plugins_loaded', 'acsp_boot' );
+
+/**
+ * Initialise CSP engine.
  *
  * @return void
  */
@@ -50,10 +96,10 @@ function acsp_boot() {
 /*
  * ------------------------------------------------------------------
  * Admin menu & tabs
- *
  * ------------------------------------------------------------------
  */
 add_action( 'admin_menu', 'acsp_admin_menu' );
+
 /**
  * Register the top-level menu.
  *
@@ -101,10 +147,10 @@ function acsp_router() {
 /*
  * ------------------------------------------------------------------
  * CSS + JS  (only on our pages)
- *
  * ------------------------------------------------------------------
  */
 add_action( 'admin_enqueue_scripts', 'acsp_assets' );
+
 /**
  * Enqueue admin assets.
  *
@@ -125,6 +171,7 @@ function acsp_assets( $hook_suffix ) {
  * ------------------------------------------------------------------
  */
 register_activation_hook( ACSP_FILE, 'acsp_activate' );
+
 /**
  * Seed default options on activation.
  *
@@ -137,6 +184,7 @@ function acsp_activate() {
 }
 
 register_uninstall_hook( ACSP_FILE, 'acsp_uninstall' );
+
 /**
  * Remove all traces on uninstall.
  *

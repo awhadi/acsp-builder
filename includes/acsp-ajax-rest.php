@@ -105,7 +105,16 @@ function acsp_handle_import() {
 	if ( empty( $_FILES['acsp_import_file'] ) || ! isset( $_FILES['acsp_import_file']['tmp_name'] ) ) {
 		add_settings_error( 'acsp_settings', 'acsp_import_fail', 'No file uploaded.', 'error' );
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
-		wp_safe_redirect( add_query_arg( 'tab', 'settings', admin_url( 'admin.php?page=acsp-builder' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => 'acsp-builder',
+					'tab'      => 'settings',
+					'_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ),
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 
@@ -113,18 +122,35 @@ function acsp_handle_import() {
 	if ( ! is_uploaded_file( $file ) ) {
 		add_settings_error( 'acsp_settings', 'acsp_import_fail', 'Upload failed.', 'error' );
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
-		wp_safe_redirect( add_query_arg( 'tab', 'settings', admin_url( 'admin.php?page=acsp-builder' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => 'acsp-builder',
+					'tab'      => 'settings',
+					'_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ),
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 
-    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local file
 	$json = file_get_contents( $file );
 	$data = json_decode( $json, true );
 
 	if ( empty( $data ) || ! is_array( $data ) ) {
 		add_settings_error( 'acsp_settings', 'acsp_import_fail', 'Invalid JSON file.', 'error' );
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
-		wp_safe_redirect( add_query_arg( 'tab', 'settings', admin_url( 'admin.php?page=acsp-builder' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => 'acsp-builder',
+					'tab'      => 'settings',
+					'_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ),
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 
@@ -140,7 +166,16 @@ function acsp_handle_import() {
 
 	add_settings_error( 'acsp_settings', 'acsp_import_ok', 'JSON preset imported successfully.', 'updated' );
 	set_transient( 'settings_errors', get_settings_errors(), 30 );
-	wp_safe_redirect( add_query_arg( 'tab', 'settings', admin_url( 'admin.php?page=acsp-builder' ) ) );
+	wp_safe_redirect(
+		add_query_arg(
+			array(
+				'page'     => 'acsp-builder',
+				'tab'      => 'settings',
+				'_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ),
+			),
+			admin_url( 'admin.php' )
+		)
+	);
 	exit;
 }
 
@@ -173,7 +208,16 @@ function acsp_preset_reset_handlers() {
 			delete_option( $o );
 		}
 		set_transient( 'acsp_live_policy_preview', 'No CSP active (policy is empty).', 30 );
-		wp_safe_redirect( add_query_arg( 'tab', 'presets', admin_url( 'admin.php?page=acsp-builder' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => 'acsp-builder',
+					'tab'      => 'presets',
+					'_wpnonce' => wp_create_nonce( 'acsp_tab_presets' ),
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 
@@ -196,7 +240,16 @@ function acsp_preset_reset_handlers() {
 			set_transient( 'settings_errors', get_settings_errors(), 30 );
 		}
 
-		wp_safe_redirect( add_query_arg( 'tab', 'presets', admin_url( 'admin.php?page=acsp-builder' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => 'acsp-builder',
+					'tab'      => 'presets',
+					'_wpnonce' => wp_create_nonce( 'acsp_tab_presets' ),
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 }
