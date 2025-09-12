@@ -6,42 +6,98 @@
  */
 
 // ------------------------------------------------------------------
-// Ajax end-point used by the settings page to test a report URI
+// Ajax endpoint testing
 // ------------------------------------------------------------------
-add_action( 'wp_ajax_acsp_test_report_uri', 'acsp_ajax_test_report' );
+add_action( 'wp_ajax_acsp_test_report_endpoint', 'acsp_test_report_endpoint' );
 /**
- * Send a dummy CSP report to the given URL and return HTTP status.
+ * Test if a report endpoint is valid and available
  *
- * @since 1.0.3
+ * @since 1.0.9
  */
-function acsp_ajax_test_report() {
-	// Basic capability check + nonce check.
+function acsp_test_report_endpoint() {
+	// Basic capability check
 	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_send_json_error( 'insufficient_permissions' );
+		wp_send_json_error( 'Insufficient permissions' );
 	}
-	check_ajax_referer( 'acsp_test_report_uri', 'nonce' );
+
+	// Nonce check
+	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'acsp_test_endpoint' ) ) {
+		wp_send_json_error( 'Security check failed. Please refresh the page and try again.' );
+	}
 
 	$url = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '';
 	if ( ! $url ) {
-		wp_send_json_error( 'empty_url' );
+		wp_send_json_error( 'Empty URL provided' );
 	}
+
+	// Validate URL format
+	if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+		wp_send_json_error( 'Invalid URL format' );
+	}
+
+	// Test the endpoint with a proper CSP report format
+	$test_report = array(
+		'csp-report' => array(
+			'document-uri'        => home_url(),
+			'referrer'            => '',
+			'violated-directive'  => 'script-src',
+			'effective-directive' => 'script-src',
+			'original-policy'     => 'test-policy',
+			'disposition'         => 'report',
+			'blocked-uri'         => 'https://example.com/test.js',
+			'line-number'         => 1,
+			'column-number'       => 1,
+			'source-file'         => home_url( '/test.js' ),
+			'status-code'         => 200,
+			'script-sample'       => '',
+		),
+	);
 
 	$response = wp_remote_post(
 		$url,
 		array(
-			'method'  => 'POST',
-			'body'    => wp_json_encode( array( 'test' => 'ping' ) ),
-			'headers' => array( 'Content-Type' => 'application/csp-report' ),
-			'timeout' => 10,
+			'method'      => 'POST',
+			'body'        => wp_json_encode( $test_report ),
+			'headers'     => array(
+				'Content-Type' => 'application/csp-report',
+				'User-Agent'   => 'aCSP-Builder/Test',
+			),
+			'timeout'     => 15,
+			'redirection' => 2,
+			'httpversion' => '1.1',
+			'sslverify'   => false, // Allow self-signed certificates for testing
 		)
 	);
 
 	if ( is_wp_error( $response ) ) {
-		wp_send_json_error( $response->get_error_message() );
+		$error_message = $response->get_error_message();
+
+		// Provide more user-friendly error messages
+		if ( strpos( $error_message, 'cURL error' ) !== false ) {
+			if ( strpos( $error_message, 'Could not resolve host' ) !== false ) {
+				wp_send_json_error( 'Could not resolve the hostname. Please check the URL.' );
+			} elseif ( strpos( $error_message, 'Connection timed out' ) !== false ) {
+				wp_send_json_error( 'Connection timed out. The endpoint may be unreachable.' );
+			} elseif ( strpos( $error_message, 'SSL certificate' ) !== false ) {
+				wp_send_json_error( 'SSL certificate error. The endpoint may have an invalid certificate.' );
+			}
+		}
+
+		wp_send_json_error( $error_message );
 	}
 
 	$code = wp_remote_retrieve_response_code( $response );
-	( $code >= 200 && $code < 300 ) ? wp_send_json_success( 'OK' ) : wp_send_json_error( "HTTP $code" );
+	$body = wp_remote_retrieve_body( $response );
+
+	if ( $code >= 200 && $code < 300 ) {
+		wp_send_json_success( 'Endpoint is responding correctly (HTTP ' . $code . ')' );
+	} elseif ( $code >= 400 && $code < 500 ) {
+		wp_send_json_error( "Endpoint returned client error (HTTP $code). The endpoint may not be configured to accept CSP reports." );
+	} elseif ( $code >= 500 ) {
+		wp_send_json_error( "Endpoint returned server error (HTTP $code). The endpoint server may be experiencing issues." );
+	} else {
+		wp_send_json_error( "Unexpected response (HTTP $code)" );
+	}
 }
 
 // ------------------------------------------------------------------

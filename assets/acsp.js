@@ -63,4 +63,62 @@
 			);
 		}
 	);
+
+	/* -------------------------------------------------------------
+	* 3. Settings tab – Report Endpoint Testing
+	* ----------------------------------------------------------- */
+	$( document ).ready(
+		function () {
+			$( '#acsp_test_endpoint' ).on(
+				'click',
+				function () {
+					const endpoint      = $( '#acsp_report_endpoint' ).val().trim();
+					const resultElement = $( '#acsp_test_result' );
+
+					if ( ! endpoint ) {
+							resultElement.html( '<span style="color: #dc3232;">Please enter an endpoint URL first</span>' ).show();
+							return;
+					}
+
+					// Show loading state
+					$( this ).prop( 'disabled', true ).text( 'Testing...' );
+					resultElement.html( '<span style="color: #666;">Testing endpoint...</span>' ).show();
+
+					// Send AJAX request
+					$.ajax(
+						{
+							url: acsp_ajax.ajaxurl,
+							type: 'POST',
+							data: {
+								action: 'acsp_test_report_endpoint',
+								url: endpoint,
+								nonce: acsp_ajax.nonce // Use the localized nonce
+							},
+							success: function ( response ) {
+								if ( response.success ) {
+									resultElement.html( '<span style="color: #46b450;">✓ Endpoint available and responding</span>' );
+								} else {
+									resultElement.html( '<span style="color: #dc3232;">✗ Endpoint error: ' + response.data + '</span>' );
+								}
+							},
+							error: function ( xhr, status, error ) {
+								resultElement.html( '<span style="color: #dc3232;">✗ AJAX error: ' + error + '</span>' );
+							},
+							complete: function () {
+								$( '#acsp_test_endpoint' ).prop( 'disabled', false ).text( 'Test Endpoint' );
+
+								// Hide result after 5 seconds
+								setTimeout(
+									function () {
+										resultElement.fadeOut();
+									},
+									5000
+								);
+							}
+						}
+					);
+				}
+			);
+		}
+	);
 } )( jQuery );

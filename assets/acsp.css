@@ -415,3 +415,16 @@
 	background:#e1e8ed;
 	color:#1d3557;   /* dark text – makes “Custom” readable */
 }
+
+/* Endpoint test result styling */
+#acsp_test_result {
+	font-weight: 600;
+	padding: 4px 8px;
+	border-radius: 3px;
+}
+
+#acsp_test_result span {
+	display: inline-block;
+	padding: 2px 6px;
+	border-radius: 3px;
+}

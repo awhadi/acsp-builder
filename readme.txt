@@ -67,6 +67,13 @@ Yes. If it saves you a security audit or a week of Stack-Overflow, [buy me a cof
 5. About tab – helpful links and donation box (no upsells)
 
 == Changelog ==
+= 1.0.10 =
+* Add endpoint testing functionality with "Test Endpoint" button
+* Fix security nonce handling in AJAX endpoint validation
+* Ensure proper CSP header syntax with correct semicolon termination
+* Add user-friendly error messaging for connection failures
+* Improve JavaScript localization for secure AJAX communication
+
 Changelog for Version 1.0.9
 **Fixed**
 *CSP Directive Ordering: Fixed improper ordering in CSP header generation that placed hashes and nonces after URLs instead of maintaining logical flow

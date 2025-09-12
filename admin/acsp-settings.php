@@ -164,18 +164,27 @@ settings_errors( 'acsp_settings' );
 				</div>
 
 				<div class="acsp-card">
-					<h3>Report</h3>
-					<p>Enter the endpoint where violation reports should be sent (optional).</p>
-					<table class="form-table">
-						<tr>
-							<th scope="row">Report endpoint</th>
-							<td>
-								<input type="url" name="acsp_report_endpoint" value="<?php echo esc_attr( get_option( 'acsp_report_endpoint', '' ) ); ?>" class="regular-text code" placeholder="https://example.com/wp-json/acsp/v1/report   ">
-								<p class="description">URL that receives both <code>report-to</code> and legacy <code>report-uri</code> reports.</p>
-							</td>
-						</tr>
-					</table>
-				</div>
+	<h3>Report</h3>
+	<p>Enter the endpoint where violation reports should be sent (optional).</p>
+	<table class="form-table">
+		<tr>
+	<th scope="row">Report endpoint</th>
+	<td>
+		<?php
+		$report_endpoint = get_option( 'acsp_report_endpoint', '' );
+		// Handle array format from aCSP Report plugin
+		if ( is_array( $report_endpoint ) && isset( $report_endpoint['rest'] ) ) {
+			$report_endpoint = $report_endpoint['rest'];
+		}
+		?>
+		<input type="url" name="acsp_report_endpoint" id="acsp_report_endpoint" value="<?php echo esc_attr( $report_endpoint ); ?>" class="regular-text code" placeholder="https://example.com/wp-json/acsp/v1/report">
+		<button type="button" id="acsp_test_endpoint" class="button button-secondary" style="margin-left: 10px;">Test Endpoint</button>
+		<span id="acsp_test_result" style="margin-left: 10px; display: none;"></span>
+		<p class="description">URL that receives both <code>report-to</code> and legacy <code>report-uri</code> reports.</p>
+	</td>
+</tr>
+	</table>
+</div>
 
 				<div style="display:flex;justify-content:flex-end;margin-top:20px;">
 					<?php submit_button( 'Save Changes', 'primary', 'submit', false ); ?>

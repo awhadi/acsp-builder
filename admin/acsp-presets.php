@@ -80,6 +80,10 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 			$nonce           = defined( 'ACSP_NONCE' ) ? ACSP_NONCE : '';
 			$policy_arr      = get_option( 'acsp_policy', array() );
 			$report_endpoint = get_option( 'acsp_report_endpoint', '' );
+			// If it's an array (from aCSP Report plugin), use the REST endpoint
+			if ( is_array( $report_endpoint ) && isset( $report_endpoint['rest'] ) ) {
+				$report_endpoint = $report_endpoint['rest'];
+			}
 
 			$directives = array();
 			$source     = ( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) )
