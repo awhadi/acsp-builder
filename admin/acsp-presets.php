@@ -86,31 +86,42 @@ $current_preset = get_option( 'acsp_current_preset', '' );
 				? acsp_get_presets()[ $current_preset ]['policy']
 				: $policy_arr;
 
+			// In the Live header preview section of acsp-presets.php
 			foreach ( $source as $key => $val ) {
 				if ( '' === trim( $val ) ) {
 					continue;
 				}
-				$directive = trim( $val );
 
-				if ( get_option( 'acsp_add_dynamic_nonce', 1 ) && in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
-					$directive .= " 'nonce-" . $nonce . "'";
-				}
+				// Split into parts for proper ordering
+				$parts = preg_split( '/\s+/', trim( $val ) );
 
+				// Insert hashes right after 'unsafe-hashes' if present
 				$hash_enabled = (bool) get_option( 'acsp_enable_hashes', 0 );
 				$hash_values  = array_filter( (array) get_option( 'acsp_hash_values', array() ) );
 
-				if (
-					$hash_enabled
-					&& ! empty( $hash_values )
-					&& in_array( $key, array( 'script-src', 'style-src' ), true )
-					&& str_contains( $directive, "'unsafe-hashes'" )
-				) {
-					foreach ( $hash_values as $h ) {
-						$directive .= " '" . esc_attr( trim( $h ) ) . "'";
+				// In the hash insertion section for the preview:
+				if ( $hash_enabled && ! empty( $hash_values ) &&
+				in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
+
+					$unsafe_hashes_index = array_search( "'unsafe-hashes'", $parts );
+					if ( $unsafe_hashes_index !== false ) {
+							// Ensure each hash is properly quoted
+							$quoted_hashes = array();
+						foreach ( $hash_values as $hash ) {
+							$quoted_hashes[] = "'" . esc_attr( trim( $hash ) ) . "'";
+						}
+						// Insert quoted hashes immediately after 'unsafe-hashes'
+						array_splice( $parts, $unsafe_hashes_index + 1, 0, $quoted_hashes );
 					}
 				}
 
-				$directives[] = $key . ' ' . $directive;
+				// Add nonce at the end for script/style directives
+				if ( get_option( 'acsp_add_dynamic_nonce', 1 ) && in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
+					$parts[] = "'nonce-" . $nonce . "'";
+				}
+
+				// Reconstruct with proper order
+				$directives[] = $key . ' ' . implode( ' ', $parts );
 			}
 
 			if ( ! empty( $directives ) && $report_endpoint ) {

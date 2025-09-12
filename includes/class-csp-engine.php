@@ -177,31 +177,42 @@ final class CSP_Engine {
 		if ( empty( array_filter( $this->policy_options ) ) ) {
 			return '';
 		}
+
 		foreach ( $this->policy_options as $key => $value ) {
 			if ( '' === trim( $value ) ) {
 				continue;
 			}
-			$directive = trim( $value );
 
-			if ( $this->nonce_enabled && in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
-				$directive .= " 'nonce-" . ACSP_NONCE . "'";
-			}
+			// Split the directive value into parts for proper ordering
+			$parts = preg_split( '/\s+/', trim( $value ) );
 
+			// Insert hashes right after 'unsafe-hashes' if present
 			$hash_enabled = (bool) get_option( 'acsp_enable_hashes', 0 );
 			$hash_values  = array_filter( (array) get_option( 'acsp_hash_values', array() ) );
 
-			if (
-				$hash_enabled
-				&& ! empty( $hash_values )
-				&& in_array( $key, array( 'script-src', 'style-src' ), true )
-				&& str_contains( $directive, "'unsafe-hashes'" )
-			) {
-				foreach ( $hash_values as $h ) {
-					$directive .= " '" . esc_attr( trim( $h ) ) . "'";
+			// In the hash insertion section, ensure quotes are added:
+			if ( $hash_enabled && ! empty( $hash_values ) &&
+			in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
+
+					$unsafe_hashes_index = array_search( "'unsafe-hashes'", $parts );
+				if ( $unsafe_hashes_index !== false ) {
+					// Ensure each hash is properly quoted
+					$quoted_hashes = array();
+					foreach ( $hash_values as $hash ) {
+						$quoted_hashes[] = "'" . esc_attr( trim( $hash ) ) . "'";
+					}
+					// Insert quoted hashes immediately after 'unsafe-hashes'
+					array_splice( $parts, $unsafe_hashes_index + 1, 0, $quoted_hashes );
 				}
 			}
 
-			$directives[ $key ] = $directive;
+			// Add nonce at the end for script/style directives
+			if ( $this->nonce_enabled && in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
+				$parts[] = "'nonce-" . ACSP_NONCE . "'";
+			}
+
+			// Reconstruct the directive with proper order
+			$directives[ $key ] = implode( ' ', $parts );
 		}
 
 		$endpoint = get_option( 'acsp_report_endpoint', '' );

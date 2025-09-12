@@ -67,6 +67,13 @@ Yes. If it saves you a security audit or a week of Stack-Overflow, [buy me a cof
 5. About tab – helpful links and donation box (no upsells)
 
 == Changelog ==
+Changelog for Version 1.0.9
+**Fixed**
+*CSP Directive Ordering: Fixed improper ordering in CSP header generation that placed hashes and nonces after URLs instead of maintaining logical flow
+*Hash Quoting: Ensured all hash values are properly wrapped in single quotes to comply with CSP specification requirements
+*Preview Consistency: Applied the same fixes to the Quick Start tab preview for accurate representation of actual headers
+*URL Handling: Maintained correct unquoted format for domains and URLs as required by CSP standards
+
 = 1.0.7 =
 * Fix 15 WordPress-Core PHPCS violations across acsp-builder.php, acsp-register.php, acsp-presets.php
 * Add missing nonce verification & proper sanitisation in admin routing
