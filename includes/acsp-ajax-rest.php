@@ -2,40 +2,41 @@
 /**
  * Ajax handlers + JSON import/export + preset apply/reset.
  *
- * @package aCSP-Builder
+ * @package acsp-builder
  */
 
 // ------------------------------------------------------------------
-// Ajax endpoint testing
+// Ajax endpoint testing.
 // ------------------------------------------------------------------
 add_action( 'wp_ajax_acsp_test_report_endpoint', 'acsp_test_report_endpoint' );
+
 /**
- * Test if a report endpoint is valid and available
+ * Test if a report endpoint is valid and available.
  *
  * @since 1.0.9
  */
 function acsp_test_report_endpoint() {
-	// Basic capability check
+	// Basic capability check.
 	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_send_json_error( 'Insufficient permissions' );
+		wp_send_json_error( 'Insufficient permissions.' );
 	}
 
-	// Nonce check
+	// Nonce check.
 	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'acsp_test_endpoint' ) ) {
 		wp_send_json_error( 'Security check failed. Please refresh the page and try again.' );
 	}
 
 	$url = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '';
 	if ( ! $url ) {
-		wp_send_json_error( 'Empty URL provided' );
+		wp_send_json_error( 'Empty URL provided.' );
 	}
 
-	// Validate URL format
+	// Validate URL format.
 	if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
-		wp_send_json_error( 'Invalid URL format' );
+		wp_send_json_error( 'Invalid URL format.' );
 	}
 
-	// Test the endpoint with a proper CSP report format
+	// Test the endpoint with a proper CSP report format.
 	$test_report = array(
 		'csp-report' => array(
 			'document-uri'        => home_url(),
@@ -65,14 +66,14 @@ function acsp_test_report_endpoint() {
 			'timeout'     => 15,
 			'redirection' => 2,
 			'httpversion' => '1.1',
-			'sslverify'   => false, // Allow self-signed certificates for testing
+			'sslverify'   => false, // Allow self-signed certificates for testing.
 		)
 	);
 
 	if ( is_wp_error( $response ) ) {
 		$error_message = $response->get_error_message();
 
-		// Provide more user-friendly error messages
+		// Provide more user-friendly error messages.
 		if ( strpos( $error_message, 'cURL error' ) !== false ) {
 			if ( strpos( $error_message, 'Could not resolve host' ) !== false ) {
 				wp_send_json_error( 'Could not resolve the hostname. Please check the URL.' );
@@ -90,20 +91,21 @@ function acsp_test_report_endpoint() {
 	$body = wp_remote_retrieve_body( $response );
 
 	if ( $code >= 200 && $code < 300 ) {
-		wp_send_json_success( 'Endpoint is responding correctly (HTTP ' . $code . ')' );
+		wp_send_json_success( 'Endpoint is responding correctly (HTTP ' . $code . ').' );
 	} elseif ( $code >= 400 && $code < 500 ) {
 		wp_send_json_error( "Endpoint returned client error (HTTP $code). The endpoint may not be configured to accept CSP reports." );
 	} elseif ( $code >= 500 ) {
 		wp_send_json_error( "Endpoint returned server error (HTTP $code). The endpoint server may be experiencing issues." );
 	} else {
-		wp_send_json_error( "Unexpected response (HTTP $code)" );
+		wp_send_json_error( "Unexpected response (HTTP $code)." );
 	}
 }
 
 // ------------------------------------------------------------------
-// JSON EXPORT (triggered in settings tab)
+// JSON EXPORT (triggered in settings tab).
 // ------------------------------------------------------------------
 add_action( 'admin_post_acsp_export_json', 'acsp_handle_export' );
+
 /**
  * Stream a JSON file that contains current policy & settings.
  *
@@ -140,9 +142,10 @@ function acsp_handle_export() {
 }
 
 // ------------------------------------------------------------------
-// JSON IMPORT (admin-post.php handler)
+// JSON IMPORT (admin-post.php handler).
 // ------------------------------------------------------------------
 add_action( 'admin_post_acsp_import_json', 'acsp_handle_import' );
+
 /**
  * Handle uploaded JSON file and import settings.
  *
@@ -191,6 +194,8 @@ function acsp_handle_import() {
 		exit;
 	}
 
+	// Local file -- file_get_contents() is appropriate here.
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 	$json = file_get_contents( $file );
 	$data = json_decode( $json, true );
 
@@ -236,13 +241,14 @@ function acsp_handle_import() {
 }
 
 // ------------------------------------------------------------------
-// PRESET APPLY + RESET (safe POST handlers)
+// PRESET APPLY + RESET (safe POST handlers).
 // ------------------------------------------------------------------
 add_action( 'admin_init', 'acsp_preset_reset_handlers' );
+
 /**
  * Handles two distinct actions:
- * 1. "Reset all policies" button
- * 2. "Apply preset" link (GET with nonce)
+ * 1. "Reset all policies" button.
+ * 2. "Apply preset" link (GET with nonce).
  *
  * @since 1.0.3
  */

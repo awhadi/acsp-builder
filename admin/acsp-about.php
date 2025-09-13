@@ -2,7 +2,7 @@
 /**
  * About tab – markup only
  *
- * @package aCSP
+ * @package acsp-builder
  */
 
 if ( ! current_user_can( 'manage_options' ) ) {

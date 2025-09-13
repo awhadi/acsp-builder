@@ -2,7 +2,7 @@
 /**
  * Force policy to "custom" when user edits anything that diverges from a preset.
  *
- * @package aCSP-Builder
+ * @package acsp-builder
  */
 
 add_action( 'update_option_acsp_policy', 'acsp_maybe_switch_to_custom', 10, 3 );
@@ -11,11 +11,10 @@ add_action( 'update_option_acsp_policy', 'acsp_maybe_switch_to_custom', 10, 3 );
  * Switches the active preset to "custom" whenever the saved policy no longer
  * matches the preset that was previously active.
  *
- * @param mixed  $old_value  Previous option value.
- * @param mixed  $value      New option value.
- * @param string $option     Option name (unused).
+ * @param mixed $old_value  Previous option value.
+ * @param mixed $value      New option value.
  */
-function acsp_maybe_switch_to_custom( $old_value, $value, $option ) {
+function acsp_maybe_switch_to_custom( $old_value, $value ) {
 	if ( ! $value || ! is_array( $value ) ) {
 		return;
 	}

@@ -2,7 +2,7 @@
 /**
  * Custom policy builder tab.
  *
- * @package aCSP-Builder
+ * @package acsp-builder
  */
 
 if ( ! current_user_can( 'manage_options' ) ) {
@@ -86,7 +86,7 @@ $keyword_explanations = array(
 ?>
 
 <div class="wrap">
-	<h1><?php esc_html_e( 'a Content-Security-Policy (CSP) Builder', 'aCSP' ); ?></h1>
+	<h1><?php esc_html_e( 'a Content-Security-Policy (CSP) Builder', 'acsp-builder' ); ?></h1>
 
 	<h2 class="nav-tab-wrapper">
 		<?php
@@ -135,15 +135,15 @@ $keyword_explanations = array(
 
 				<?php if ( $current_preset && 'custom' !== $current_preset ) : ?>
 					<div class="notice notice-success">
-						<p><strong><?php esc_html_e( '✅ Preset active.', 'aCSP' ); ?></strong> <?php esc_html_e( 'Customising will switch to a custom policy.', 'aCSP' ); ?></p>
+						<p><strong><?php esc_html_e( '✅ Preset active.', 'acsp-builder' ); ?></strong> <?php esc_html_e( 'Customising will switch to a custom policy.', 'acsp-builder' ); ?></p>
 					</div>
 				<?php elseif ( ! $current_preset && empty( get_option( 'acsp_policy' ) ) ) : ?>
 					<div class="notice notice-info">
-						<p><strong><?php esc_html_e( 'ℹ️ No CSP active', 'aCSP' ); ?></strong> <?php esc_html_e( 'Configure directives below to create a custom policy.', 'aCSP' ); ?></p>
+						<p><strong><?php esc_html_e( 'ℹ️ No CSP active', 'acsp-builder' ); ?></strong> <?php esc_html_e( 'Configure directives below to create a custom policy.', 'acsp-builder' ); ?></p>
 					</div>
 				<?php endif; ?>
 
-				<p><?php esc_html_e( 'Check the keywords you want, and/or add extra hostnames. Leave everything unchecked to fall back to the default.', 'aCSP' ); ?></p>
+				<p><?php esc_html_e( 'Check the keywords you want, and/or add extra hostnames. Leave everything unchecked to fall back to the default.', 'acsp-builder' ); ?></p>
 
 				<table class="form-table">
 					<?php foreach ( $directive_data['labels'] as $dir => $label ) : ?>
@@ -194,11 +194,11 @@ $keyword_explanations = array(
 
 		<div style="flex:1;">
 			<div class="acsp-card">
-				<h3><?php esc_html_e( 'CSP Directive Values Explained', 'aCSP' ); ?></h3>
-				<p><?php esc_html_e( 'Understanding what each value means will help you build a more effective security policy:', 'aCSP' ); ?></p>
+				<h3><?php esc_html_e( 'CSP Directive Values Explained', 'acsp-builder' ); ?></h3>
+				<p><?php esc_html_e( 'Understanding what each value means will help you build a more effective security policy:', 'acsp-builder' ); ?></p>
 
 				<div class="acsp-info-sidebar">
-					<h4><?php esc_html_e( 'Keyword Values', 'aCSP' ); ?></h4>
+					<h4><?php esc_html_e( 'Keyword Values', 'acsp-builder' ); ?></h4>
 					<ul>
 						<?php foreach ( $keyword_explanations as $keyword => $explanation ) : ?>
 							<li><strong><?php echo esc_html( $keyword ); ?></strong>: <?php echo esc_html( $explanation ); ?></li>
@@ -207,25 +207,25 @@ $keyword_explanations = array(
 				</div>
 
 				<div class="acsp-info-sidebar">
-					<h4><?php esc_html_e( 'Directive-Specific Guidance', 'aCSP' ); ?></h4>
+					<h4><?php esc_html_e( 'Directive-Specific Guidance', 'acsp-builder' ); ?></h4>
 					<ul>
-						<li><strong>script-src</strong>: <?php esc_html_e( 'Controls which scripts can execute. Use self for same-origin scripts, and add specific domains for external scripts like Google Analytics.', 'aCSP' ); ?></li>
-						<li><strong>style-src</strong>: <?php esc_html_e( 'Controls which stylesheets can load. Use self for your theme/styles, and add domains for external fonts or CSS libraries.', 'aCSP' ); ?></li>
-						<li><strong>img-src</strong>: <?php esc_html_e( 'Controls image sources. Include self and domains for external images. Add data: if you use inline images.', 'aCSP' ); ?></li>
-						<li><strong>connect-src</strong>: <?php esc_html_e( 'Controls AJAX/API endpoints. Include your domain and any external APIs you use.', 'aCSP' ); ?></li>
-						<li><strong>frame-src</strong>: <?php esc_html_e( 'Controls iframe embeds. Include domains for embedded content like YouTube videos.', 'aCSP' ); ?></li>
-						<li><strong>font-src</strong>: <?php esc_html_e( 'Controls web font loading. Include your domain and external font providers like Google Fonts.', 'aCSP' ); ?></li>
+						<li><strong>script-src</strong>: <?php esc_html_e( 'Controls which scripts can execute. Use self for same-origin scripts, and add specific domains for external scripts like Google Analytics.', 'acsp-builder' ); ?></li>
+						<li><strong>style-src</strong>: <?php esc_html_e( 'Controls which stylesheets can load. Use self for your theme/styles, and add domains for external fonts or CSS libraries.', 'acsp-builder' ); ?></li>
+						<li><strong>img-src</strong>: <?php esc_html_e( 'Controls image sources. Include self and domains for external images. Add data: if you use inline images.', 'acsp-builder' ); ?></li>
+						<li><strong>connect-src</strong>: <?php esc_html_e( 'Controls AJAX/API endpoints. Include your domain and any external APIs you use.', 'acsp-builder' ); ?></li>
+						<li><strong>frame-src</strong>: <?php esc_html_e( 'Controls iframe embeds. Include domains for embedded content like YouTube videos.', 'acsp-builder' ); ?></li>
+						<li><strong>font-src</strong>: <?php esc_html_e( 'Controls web font loading. Include your domain and external font providers like Google Fonts.', 'acsp-builder' ); ?></li>
 					</ul>
 				</div>
 
 				<div class="acsp-info-sidebar">
-					<h4><?php esc_html_e( 'Best Practices', 'aCSP' ); ?></h4>
+					<h4><?php esc_html_e( 'Best Practices', 'acsp-builder' ); ?></h4>
 					<ul>
-						<li><?php esc_html_e( 'Start with restrictive policies and gradually add needed sources.', 'aCSP' ); ?></li>
-						<li><?php esc_html_e( 'Avoid unsafe-inline and unsafe-eval when possible.', 'aCSP' ); ?></li>
-						<li><?php esc_html_e( 'Use nonces (automatically handled by this plugin) for inline scripts/styles.', 'aCSP' ); ?></li>
-						<li><?php esc_html_e( 'Test your policy thoroughly before enforcing it.', 'aCSP' ); ?></li>
-						<li><?php esc_html_e( 'Use the Report URI feature to monitor violations.', 'aCSP' ); ?></li>
+						<li><?php esc_html_e( 'Start with restrictive policies and gradually add needed sources.', 'acsp-builder' ); ?></li>
+						<li><?php esc_html_e( 'Avoid unsafe-inline and unsafe-eval when possible.', 'acsp-builder' ); ?></li>
+						<li><?php esc_html_e( 'Use nonces (automatically handled by this plugin) for inline scripts/styles.', 'acsp-builder' ); ?></li>
+						<li><?php esc_html_e( 'Test your policy thoroughly before enforcing it.', 'acsp-builder' ); ?></li>
+						<li><?php esc_html_e( 'Use the Report URI feature to monitor violations.', 'acsp-builder' ); ?></li>
 					</ul>
 				</div>
 			</div>

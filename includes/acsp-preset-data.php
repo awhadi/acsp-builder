@@ -1,8 +1,8 @@
 <?php
 /**
- * Presets identical to original.
+ * Presets.
  *
- * @package aCSP-Builder
+ * @package acsp-builder
  */
 
 /**

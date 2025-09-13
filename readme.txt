@@ -1,14 +1,14 @@
-=== aCSP Builder – Bullet-Proof Content Security Policy in One Click ===
+=== aCSP Builder===
 Contributors: aStudio, Amir Khosro Awhadi
-Tags: CSP, security, content security policy, nonce, XSS protection, headers
+Tags: security, content security policy, nonce, XSS protection, headers
 Requires at least: 5.8
-Tested up to: 6.8.2
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.11
 License: GPL-2.0+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-The FIRST WordPress plugin that automatically adds cryptographic nonces to every script & stylesheet, lets you hash-lock inline code, and builds a bullet-proof Content Security Policy in one click.
+Automatically adds nonces to scripts/styles, hashes inline code, and builds a secure CSP in one click.
 
 == Description ==
 
@@ -67,6 +67,13 @@ Yes. If it saves you a security audit or a week of Stack-Overflow, [buy me a cof
 5. About tab – helpful links and donation box (no upsells)
 
 == Changelog ==
+= 1.0.11 =
+* Fix all PHPCS inline-comment punctuation violations across the codebase.
+* Enforce strict type comparisons and Yoda conditions where required.
+* Add phpcs:ignore annotation for legitimate local file_get_contents() usage.
+* Improve nonce generation comment to clarify benign use of base64_encode().
+* No functional changes—only coding-standards compliance.
+
 = 1.0.10 =
 * Add endpoint testing functionality with "Test Endpoint" button
 * Fix security nonce handling in AJAX endpoint validation
@@ -75,7 +82,6 @@ Yes. If it saves you a security audit or a week of Stack-Overflow, [buy me a cof
 * Improve JavaScript localization for secure AJAX communication
 
 Changelog for Version 1.0.9
-**Fixed**
 *CSP Directive Ordering: Fixed improper ordering in CSP header generation that placed hashes and nonces after URLs instead of maintaining logical flow
 *Hash Quoting: Ensured all hash values are properly wrapped in single quotes to comply with CSP specification requirements
 *Preview Consistency: Applied the same fixes to the Quick Start tab preview for accurate representation of actual headers

@@ -1,8 +1,8 @@
 <?php
 /**
- * Settings tab (former huge settings section).
+ * Settings tab.
  *
- * @package aCSP-Builder
+ * @package acsp-builder
  */
 
 if ( ! current_user_can( 'manage_options' ) ) {
@@ -172,7 +172,7 @@ settings_errors( 'acsp_settings' );
 	<td>
 		<?php
 		$report_endpoint = get_option( 'acsp_report_endpoint', '' );
-		// Handle array format from aCSP Report plugin
+		// Handle array format from aCSP Report plugin.
 		if ( is_array( $report_endpoint ) && isset( $report_endpoint['rest'] ) ) {
 			$report_endpoint = $report_endpoint['rest'];
 		}

@@ -1,8 +1,8 @@
 <?php
 /**
- * CSP engine – everything that used to live in the huge class.
+ * CSP engine.
  *
- * @package aCSP-Builder
+ * @package acsp-builder
  */
 
 namespace aCSP;
@@ -86,6 +86,7 @@ final class CSP_Engine {
 	 */
 	public function initialize_nonce() {
 		if ( ! defined( 'ACSP_NONCE' ) ) {
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 			define( 'ACSP_NONCE', base64_encode( random_bytes( 16 ) ) );
 		}
 	}
@@ -183,35 +184,34 @@ final class CSP_Engine {
 				continue;
 			}
 
-			// Split the directive value into parts for proper ordering
+			// Split the directive value into parts for proper ordering.
 			$parts = preg_split( '/\s+/', trim( $value ) );
 
-			// Insert hashes right after 'unsafe-hashes' if present
+			// Insert hashes right after 'unsafe-hashes' if present.
 			$hash_enabled = (bool) get_option( 'acsp_enable_hashes', 0 );
 			$hash_values  = array_filter( (array) get_option( 'acsp_hash_values', array() ) );
 
-			// In the hash insertion section, ensure quotes are added:
 			if ( $hash_enabled && ! empty( $hash_values ) &&
-			in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
+				in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
 
-					$unsafe_hashes_index = array_search( "'unsafe-hashes'", $parts );
-				if ( $unsafe_hashes_index !== false ) {
-					// Ensure each hash is properly quoted
+				$unsafe_hashes_index = array_search( "'unsafe-hashes'", $parts, true );
+				if ( false !== $unsafe_hashes_index ) {
+					// Ensure each hash is properly quoted.
 					$quoted_hashes = array();
 					foreach ( $hash_values as $hash ) {
 						$quoted_hashes[] = "'" . esc_attr( trim( $hash ) ) . "'";
 					}
-					// Insert quoted hashes immediately after 'unsafe-hashes'
+					// Insert quoted hashes immediately after 'unsafe-hashes'.
 					array_splice( $parts, $unsafe_hashes_index + 1, 0, $quoted_hashes );
 				}
 			}
 
-			// Add nonce at the end for script/style directives
+			// Add nonce at the end for script/style directives.
 			if ( $this->nonce_enabled && in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
 				$parts[] = "'nonce-" . ACSP_NONCE . "'";
 			}
 
-			// Reconstruct the directive with proper order
+			// Reconstruct the directive with proper order.
 			$directives[ $key ] = implode( ' ', $parts );
 		}
 
@@ -244,8 +244,8 @@ final class CSP_Engine {
 	 * Add nonce attribute to <script> tags.
 	 *
 	 * @param string $tag    Original tag markup.
-	 * @param string $handle Script handle (unused).
-	 * @param string $src    Script source (unused).
+	 * @param string $handle Script handle.
+	 * @param string $src    Script source.
 	 * @return string
 	 */
 	public function inject_nonce_to_scripts( $tag, $handle, $src ) {
@@ -259,8 +259,8 @@ final class CSP_Engine {
 	 * Add nonce attribute to <link> tags for stylesheets.
 	 *
 	 * @param string $tag    Original tag markup.
-	 * @param string $handle Style handle (unused).
-	 * @param string $src    Style source (unused).
+	 * @param string $handle Style handle.
+	 * @param string $src    Style source.
 	 * @return string
 	 */
 	public function inject_nonce_to_styles( $tag, $handle, $src ) {

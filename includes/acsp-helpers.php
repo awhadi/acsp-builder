@@ -2,7 +2,7 @@
 /**
  * Helper utilities for CSP directive handling.
  *
- * @package aCSP-Builder
+ * @package acsp-builder
  */
 
 /**

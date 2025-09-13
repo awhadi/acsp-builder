@@ -3,15 +3,15 @@
  * Plugin Name: aCSP Builder
  * Plugin URI:  https://plugins.awhadi.online
  * Description: The FIRST WordPress plugin that automatically adds cryptographic nonces to every script & stylesheet, lets you hash-lock inline code, and builds a bullet-proof Content Security Policy in one click.
- * Version:     1.0.10
+ * Version:     1.0.11
  * Requires WP: 5.8
  * Requires PHP:7.4
- * Text Domain: aCSP-Builder
+ * Text Domain: acsp-builder
  * Domain Path: /languages
- * Author:      aStudio, Amir Khosro Awhadi
+ * Author:      Amir Khosro Awhadi
  * License:     GPL-2.0+
  *
- * @package aCSP
+ * @package acsp-builder
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'ACSP_FILE', __FILE__ );
 define( 'ACSP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ACSP_URL', plugin_dir_url( __FILE__ ) );
-define( 'ACSP_VER', '1.0.10' );
+define( 'ACSP_VER', '1.0.11' );
 
 /*
 ------------------------------------------------------------------
@@ -164,7 +164,7 @@ function acsp_assets( $hook_suffix ) {
 	wp_enqueue_style( 'acsp-admin', ACSP_URL . 'assets/acsp.css', array(), ACSP_VER );
 	wp_enqueue_script( 'acsp-admin', ACSP_URL . 'assets/acsp.js', array( 'jquery' ), ACSP_VER, true );
 
-	// Localize AJAX URL and nonce
+	// Localize AJAX URL and nonce.
 	wp_localize_script(
 		'acsp-admin',
 		'acsp_ajax',

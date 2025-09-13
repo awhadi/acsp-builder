@@ -2,7 +2,7 @@
 /**
  * Settings registration, REST route, plugin-action links, activation defaults.
  *
- * @package aCSP-Builder
+ * @package acsp-builder
  */
 
 // ------------------------------------------------------------------
@@ -125,12 +125,12 @@ function acsp_submenus() {
 
 	foreach ( $tabs as $slug => $title ) {
 		add_submenu_page(
-			'acsp-builder',          // parent.
-			$title,                  // page title.
-			$title,                  // menu title.
-			'manage_options',        // cap.
+			'acsp-builder',
+			$title,
+			$title,
+			'manage_options',
 			'acsp-builder&tab=' . $slug . '&_wpnonce=' . wp_create_nonce( 'acsp_tab_' . $slug ),
-			'acsp_router'            // same renderer.
+			'acsp_router'
 		);
 	}
 

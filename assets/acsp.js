@@ -80,11 +80,11 @@
 							return;
 					}
 
-					// Show loading state
+					// Show loading state.
 					$( this ).prop( 'disabled', true ).text( 'Testing...' );
 					resultElement.html( '<span style="color: #666;">Testing endpoint...</span>' ).show();
 
-					// Send AJAX request
+					// Send AJAX request.
 					$.ajax(
 						{
 							url: acsp_ajax.ajaxurl,
@@ -92,7 +92,7 @@
 							data: {
 								action: 'acsp_test_report_endpoint',
 								url: endpoint,
-								nonce: acsp_ajax.nonce // Use the localized nonce
+								nonce: acsp_ajax.nonce
 							},
 							success: function ( response ) {
 								if ( response.success ) {
@@ -107,7 +107,7 @@
 							complete: function () {
 								$( '#acsp_test_endpoint' ).prop( 'disabled', false ).text( 'Test Endpoint' );
 
-								// Hide result after 5 seconds
+								// Hide result after 5 seconds.
 								setTimeout(
 									function () {
 										resultElement.fadeOut();
