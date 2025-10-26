@@ -1,27 +1,20 @@
 <?php
-/**
- * About tab – markup only
- *
- * @package acsp-builder
- */
-
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( 'Unauthorized user' );
 }
 
-// --------- nonce check ---------
 $nonce_action = 'acsp_tab_about';
 if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), $nonce_action ) ) {
 	wp_die( 'Security check failed.' );
 }
+
 $acsp_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets';
-// --------------------------------
 
 $plugin_list = get_transient( 'acsp_my_plugins' );
 if ( false === $plugin_list ) {
 	$resp = wp_remote_get( 'https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[author]=amirawhadi&request[per_page]=20' );
 	if ( ! is_wp_error( $resp ) && 200 === wp_remote_retrieve_response_code( $resp ) ) {
-		$body        = json_decode( wp_remote_retrieve_body( $resp ), true );
+		$body = json_decode( wp_remote_retrieve_body( $resp ), true );
 		$plugin_list = $body['plugins'] ?? array();
 		set_transient( 'acsp_my_plugins', $plugin_list, 12 * HOUR_IN_SECONDS );
 	} else {
@@ -32,45 +25,39 @@ if ( false === $plugin_list ) {
 
 <div class="wrap">
 	<h1>a Content-Security-Policy (CSP) Builder</h1>
-	<?php
-	$nav_tabs = array(
-		'presets'  => 'Quick Start',
-		'builder'  => 'Custom Policy Builder',
-		'settings' => 'Settings',
-		'about'    => 'About',
-	);
-	?>
+	
 	<h2 class="nav-tab-wrapper">
-		<?php foreach ( $nav_tabs as $nav_tab => $label ) : ?>
-			<a href="
-			<?php
-			echo esc_url(
-				add_query_arg(
-					array(
-						'page'     => 'acsp-builder',
-						'tab'      => $nav_tab,
-						'_wpnonce' => wp_create_nonce( 'acsp_tab_' . $nav_tab ),
-					),
-					admin_url( 'admin.php' )
-				)
+		<?php 
+		$nav_tabs = array(
+			'presets'  => 'Quick Start',
+			'builder'  => 'Custom Policy Builder',
+			'settings' => 'Settings',
+			'about'    => 'About',
+		);
+		foreach ( $nav_tabs as $nav_tab => $label ) : 
+			$url = add_query_arg(
+				array(
+					'page'     => 'acsp-builder',
+					'tab'      => $nav_tab,
+					'_wpnonce' => wp_create_nonce( 'acsp_tab_' . $nav_tab ),
+				),
+				admin_url( 'admin.php' )
 			);
-			?>
-						" class="nav-tab <?php echo ( $nav_tab === $acsp_tab ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
-		<?php endforeach; ?>
-		<?php
-		$current_preset = get_option( 'acsp_current_preset', '' );
 		?>
-		<span class="acsp-preset-badge <?php echo esc_attr( $current_preset ? $current_preset : 'custom' ); ?>">
-			<?php echo esc_html( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom' ); ?>
-		</span>
+			<a href="<?php echo esc_url( $url ); ?>" class="nav-tab <?php echo ( $nav_tab === $acsp_tab ? 'nav-tab-active' : '' ); ?>"><?php echo esc_html( $label ); ?></a>
+		<?php endforeach; 
+		
+		$current_preset = get_option( 'acsp_current_preset', '' );
+		$preset_class = $current_preset ?: 'custom';
+		$preset_name = $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom';
+		?>
+		<span class="acsp-preset-badge <?php echo esc_attr( $preset_class ); ?>"><?php echo esc_html( $preset_name ); ?></span>
 	</h2>
 
 	<div class="acsp-about-flex">
 		<div class="acsp-about-main">
 			<div class="acsp-card">
-				<h2>🔐 The First WordPress CSP Plugin That Just Works</h2>
-				<p>aCSP Builder automatically adds cryptographic nonces to every script & stylesheet, lets you hash-lock inline code, and builds a bullet-proof Content-Security-Policy in one click. No ads, no tracking, 100 % free for personal and enterprise use.</p>
-				<p>Created by Amir Khosro Awhadi because security should be plug-and-play, not a week of Stack-Overflow.</p>
+				<p>aCSP Builder automatically adds cryptographic nonces to every script & stylesheet, lets you hash-lock inline code, and builds a bullet-proof Content-Security-Policy in one click.</p>
 			</div>
 
 			<div class="acsp-card">
@@ -78,15 +65,10 @@ if ( false === $plugin_list ) {
 				<ul class="acsp-feature-list">
 					<li>⚡️ Zero-configuration presets: Relaxed, Balanced, Strict</li>
 					<li>🛡️ Automatic nonce injection for themes & page-builders</li>
-					<li>📊 Real-time header preview before you push “Save”</li>
+					<li>📊 Real-time header preview before you push "Save"</li>
 					<li>🌍 Works with CDNs, GA4, YouTube, Google Fonts out-of-the-box</li>
 					<li>🎯 Report-Only mode → test without breaking production</li>
 				</ul>
-			</div>
-
-			<div class="acsp-card">
-				<h3>📖 How We Stay Free</h3>
-				<p>No feature gates, no “Pro” upsells, no banners in wp-admin. If the plugin saves you time or a security audit, <strong>buy me a coffee</strong> – it keeps the updates coming and the motivation high.</p>
 			</div>
 		</div>
 

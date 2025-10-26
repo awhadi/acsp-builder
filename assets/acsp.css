@@ -67,14 +67,12 @@
 	border-radius: var(--acsp-radius);
 	padding: 20px;
 	box-shadow: var(--acsp-shadow);
-	margin-bottom: 24px;
-	margin-top: 24px;
+	margin: 24px 0;
 }
 
 .acsp-keywords label {
 	display: inline-block;
-	margin-right: 10px;
-	margin-bottom: 5px;
+	margin: 0 10px 5px 0;
 }
 
 .acsp-info-sidebar {
@@ -141,8 +139,7 @@
 }
 
 .acsp-preset-card h3 {
-	margin-top: 0;
-	margin-bottom: 8px;
+	margin: 0 0 8px;
 	font-size: 20px;
 	font-weight: 600;
 }
@@ -207,8 +204,7 @@
 }
 
 .acsp-current-policy h4 {
-	margin-top: 0;
-	margin-bottom: 8px;
+	margin: 0 0 8px;
 	font-size: 14px;
 	font-weight: 600;
 	color: #555;
@@ -265,25 +261,6 @@
 	margin-bottom: 20px;
 }
 
-@media screen and (max-width: 782px) {
-	.acsp-presets {
-		grid-template-columns: 1fr;
-	}
-
-	.acsp-card {
-		padding: 16px;
-	}
-
-	.acsp-preset-card {
-		padding: 20px;
-	}
-}
-
-.notice {
-	margin-bottom: 20px;
-}
-
-/* ---- compact hash rows ---- */
 .acsp-hash-list {
 	margin-top: 6px;
 }
@@ -304,119 +281,100 @@
 	flex: 0 0 auto;
 }
 
-/* ---------- About-tab layout ---------- */
-.acsp-about-flex{
-	display:flex;
-	gap:30px;
-	align-items:flex-start;
-	margin-top:20px;
-}
-.acsp-about-main{
-	flex:0 0 80%;
-}
-.acsp-about-side{
-	flex:1;
+.acsp-about-flex {
+	display: flex;
+	gap: 30px;
+	align-items: flex-start;
+	margin-top: 20px;
 }
 
-/* ---------- reusable cards ---------- */
-.acsp-card{
-	background:#fff;
-	border:1px solid #e0e0e0;
-	border-radius:6px;
-	padding:25px;
-	margin-bottom:25px;
-	box-shadow:0 2px 6px rgba(0,0,0,.05);
+.acsp-about-main {
+	flex: 0 0 80%;
 }
+
+.acsp-about-side {
+	flex: 1;
+}
+
 .acsp-card h2,
-.acsp-card h3{
-	margin-top:0;
+.acsp-card h3 {
+	margin-top: 0;
 }
 
-/* ---------- donation sticky box ---------- */
-.acsp-donation-box{
-	position:sticky;
-	top:0;
-	background:linear-gradient(135deg, var(--acsp-primary) 0%, var(--acsp-primary-hover) 100%);
-	color:#fff;
-	padding:30px;
-	border-radius:8px;
+.acsp-donation-box {
+	position: sticky;
+	top: 0;
+	background: linear-gradient(135deg, var(--acsp-primary) 0%, var(--acsp-primary-hover) 100%);
+	color: #fff;
+	padding: 30px;
+	border-radius: 8px;
 	margin-top: 25px;
-	box-shadow:0 8px 20px rgba(0,0,0,.15);
-	text-align:center;
-}
-.acsp-donation-box h3{
-	font-size:20px;
-	margin-bottom:10px;
-}
-.acsp-donation-box p{
-	font-size:15px;
-	margin:10px 0 20px;
-}
-.acsp-donation-box .button{
-	background:#fff;
-	color:var(--acsp-primary);
-	border:none;
-	font-size:16px;
-	font-weight:600;
-	padding:10px 24px;
-	border-radius:4px;
-	cursor:pointer;
-	text-decoration:none;
-	display:inline-block;
-	transition:transform .2s;
-}
-.acsp-donation-box .button:hover{
-	transform:translateY(-2px);
+	box-shadow: 0 8px 20px rgba(0,0,0,.15);
+	text-align: center;
 }
 
-/* ---------- plugin cards ---------- */
-.acsp-plugin-card{
-	background:#fff;
-	border:1px solid #e0e0e0;
-	border-radius:6px;
-	padding:18px;
-	margin-bottom:15px;
-	transition:box-shadow .2s;
-}
-.acsp-plugin-card:hover{
-	box-shadow:0 4px 12px rgba(0,0,0,.08);
-}
-.acsp-plugin-card h4{
-	margin:0 0 8px;
-	font-size:16px;
-}
-.acsp-plugin-card p{
-	margin:0 0 10px;
-	font-size:14px;
-	color:#555;
+.acsp-donation-box h3 {
+	font-size: 20px;
+	margin-bottom: 10px;
 }
 
-/* ---------- feature list ---------- */
-.acsp-feature-list{
-	font-size:15px;
-	line-height:1.8;
-	padding-left:20px;
-}
-.acsp-feature-list li{
-	margin-bottom:6px;
+.acsp-donation-box p {
+	font-size: 15px;
+	margin: 10px 0 20px;
 }
 
-/* ---------- responsive ---------- */
-@media (max-width:782px){
-	.acsp-about-flex{
-		flex-direction:column;
-	}
-	.acsp-about-main{
-		flex:1 0 100%;
-	}
+.acsp-donation-box .button {
+	background: #fff;
+	color: var(--acsp-primary);
+	border: none;
+	font-size: 16px;
+	font-weight: 600;
+	padding: 10px 24px;
+	border-radius: 4px;
+	cursor: pointer;
+	text-decoration: none;
+	display: inline-block;
+	transition: transform .2s;
 }
 
-.acsp-preset-badge.custom{
-	background:#e1e8ed;
-	color:#1d3557;   /* dark text – makes “Custom” readable */
+.acsp-donation-box .button:hover {
+	transform: translateY(-2px);
 }
 
-/* Endpoint test result styling */
+.acsp-plugin-card {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+	padding: 18px;
+	margin-bottom: 15px;
+	transition: box-shadow .2s;
+}
+
+.acsp-plugin-card:hover {
+	box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.acsp-plugin-card h4 {
+	margin: 0 0 8px;
+	font-size: 16px;
+}
+
+.acsp-plugin-card p {
+	margin: 0 0 10px;
+	font-size: 14px;
+	color: #555;
+}
+
+.acsp-feature-list {
+	font-size: 15px;
+	line-height: 1.8;
+	padding-left: 20px;
+}
+
+.acsp-feature-list li {
+	margin-bottom: 6px;
+}
+
 #acsp_test_result {
 	font-weight: 600;
 	padding: 4px 8px;
@@ -427,4 +385,30 @@
 	display: inline-block;
 	padding: 2px 6px;
 	border-radius: 3px;
+}
+
+@media screen and (max-width: 782px) {
+	.acsp-presets {
+		grid-template-columns: 1fr;
+	}
+
+	.acsp-card {
+		padding: 16px;
+	}
+
+	.acsp-preset-card {
+		padding: 20px;
+	}
+
+	.acsp-about-flex {
+		flex-direction: column;
+	}
+
+	.acsp-about-main {
+		flex: 1 0 100%;
+	}
+}
+
+.notice {
+	margin-bottom: 20px;
 }

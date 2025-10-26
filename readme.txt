@@ -1,119 +1,108 @@
-=== aCSP Builder===
-Contributors: aStudio, Amir Khosro Awhadi
-Tags: security, content security policy, nonce, XSS protection, headers
+=== aCSP Builder ===
+Contributors: Awhadi
+Tags: security, content security policy, csp, xss protection, headers
 Requires at least: 5.8
 Tested up to: 6.8
-Requires PHP: 7.4
-Stable tag: 1.0.11
+Stable tag: 1.0.12
 License: GPL-2.0+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Automatically adds nonces to scripts/styles, hashes inline code, and builds a secure CSP in one click.
+Build and manage Content Security Policy headers with ease.
 
 == Description ==
+aCSP Builder helps you create and implement Content Security Policy (CSP) headers for your WordPress site.
 
-Stop copying random CSP snippets from Stack Overflow.  
-aCSP Builder creates, tests and enforces a modern **Content-Security-Policy** without breaking your site.
+**Quick Start Presets**
+Choose from three security levels:
+* **Relaxed** - Good for beginners, allows common external services
+* **Balanced** - Moderate security with nonce protection
+* **Strict** - Maximum security, same-origin only
 
-**Zero-configuration presets**  
-*   **Relaxed** – perfect for beginners: allows inline scripts, Google Analytics, jQuery CDN, YouTube embeds.  
-*   **Balanced** – intermediate security: nonces for inline code, Google services allowed.  
-*   **Strict** – maximum lock-down: same-origin only, all inline code requires nonces.
+**Main Features**
+* Automatic nonce injection for scripts and styles
+* Hash-based allow-list for inline code
+* Live header preview before activation
+* Meta tag injection option for additional compatibility
+* Custom policy builder for advanced configuration
+* Report-Only mode for testing
+* Export/import settings as JSON
+* Works with popular page builders
 
-**One-click features**  
-*  Automatic `nonce-*` injection for every enqueued script & stylesheet  
-*  Hash-based allow-list for inline snippets (sha256/sha512)  
-*  Live header preview, so you can see your header directly on the plugin
-*  Report-Only mode – test without breaking production or just disable the plugin 
-*  Built-in violation logger / report-uri endpoint  
-*  Export / import JSON presets – move settings from staging to live in seconds  
-*  Works with page-builders (Elementor, Beaver, Divi, Gutenberg, WPBakery) and CDN plugins out-of-the-box  
-*  No ads, no tracking, no “Pro” upsell – 100 % free for personal & enterprise use
-
-**Goodbye console errors, hello security headers**  
-Install → choose a preset → hit **Apply**.  
-aCSP Builder handles the rest.
+**How It Works**
+1. Install and activate the plugin
+2. Choose a preset or build custom policy
+3. Test in Report-Only mode
+4. Switch to Enforce mode when ready
 
 == Installation ==
-
-1. Upload the plugin files to `/wp-content/plugins/aCSP-Builder/` or install through the WordPress plugins screen.  
-2. Activate the plugin.  
-3. Navigate to **Admin → aCSP Builder** and pick a preset (or build your own policy).  
-4. Switch from *Report-Only* to *Enforce* when you are confident the policy is clean.
+1. Upload plugin files to `/wp-content/plugins/acsp-builder/` or install via WordPress plugins screen
+2. Activate the plugin
+3. Go to **Admin → aCSP Builder**
+4. Select a preset and configure as needed
 
 == Frequently Asked Questions ==
 
-= Will it break my site? =  
-Start with **Report-Only** mode and watch the browser console. The plugin shows you the exact header it will send, so you can adjust directives before enforcing them.
+= Will this break my site? =
+Start with Report-Only mode to test without affecting your site. The plugin shows exactly what headers will be sent.
 
-= What are nonces and why do I need them? =  
-A nonce is a one-time cryptographic token that proves an inline `<script>` or `<style>` block is trusted. aCSP Builder generates a fresh nonce on every pageload and injects it automatically – no template editing required.
+= What are nonces? =
+Nonces are security tokens that verify trusted scripts and styles. The plugin automatically adds them without editing templates.
 
-= Can I whitelist external domains? =  
-Yes. Every directive has a checkbox list of common sources (Google Fonts, Analytics, YouTube, CDNs) plus an “Add custom URL” field for anything else.
+= Can I allow external domains? =
+Yes. Each directive includes common domains (Google Fonts, Analytics, etc.) and custom URL fields.
 
-= Does it work with caching plugins? =  
-Absolutely. Nonces are generated during page render, so the *value* changes, but the *placeholder* is inserted through output buffering – compatible with WP Rocket, W3 Total Cache, LiteSpeed, SiteGround Optimizer, etc.
+= Does it work with caching? =
+Works with object caching (Redis, etc.). Page caching may require additional configuration.
 
-= Is this plugin really free? =  
-Yes. If it saves you a security audit or a week of Stack-Overflow, [buy me a coffee](https://buymeacoffee.com/awhadikf) – caffeine keeps the updates coming.
+= Is this plugin free? =
+Yes. Donations via [Buy Me a Coffee](https://buymeacoffee.com/awhadikf) are appreciated but not required.
 
 == Screenshots ==
-
-1. Quick-start presets – choose your security level in one click  
-2. Custom policy builder – point-and-click directives + live header preview  
-3. Settings – nonce injection, hash allow-list, report-uri endpoint  
-4. Import / export JSON – move policies between sites instantly  
-5. About tab – helpful links and donation box (no upsells)
+1. Preset selection screen
+2. Custom policy builder
+3. Settings and configuration
+4. Import/export tools
+5. About and support information
 
 == Changelog ==
+
+= 1.0.12 =
+* Code optimization and performance improvements
+
 = 1.0.11 =
-* Fix all PHPCS inline-comment punctuation violations across the codebase.
-* Enforce strict type comparisons and Yoda conditions where required.
-* Add phpcs:ignore annotation for legitimate local file_get_contents() usage.
-* Improve nonce generation comment to clarify benign use of base64_encode().
-* No functional changes—only coding-standards compliance.
+* Fixed PHP coding standards violations
+* Improved code quality and documentation
 
 = 1.0.10 =
-* Add endpoint testing functionality with "Test Endpoint" button
-* Fix security nonce handling in AJAX endpoint validation
-* Ensure proper CSP header syntax with correct semicolon termination
-* Add user-friendly error messaging for connection failures
-* Improve JavaScript localization for secure AJAX communication
+* Added endpoint testing feature
+* Improved security and error handling
 
-Changelog for Version 1.0.9
-*CSP Directive Ordering: Fixed improper ordering in CSP header generation that placed hashes and nonces after URLs instead of maintaining logical flow
-*Hash Quoting: Ensured all hash values are properly wrapped in single quotes to comply with CSP specification requirements
-*Preview Consistency: Applied the same fixes to the Quick Start tab preview for accurate representation of actual headers
-*URL Handling: Maintained correct unquoted format for domains and URLs as required by CSP standards
+= 1.0.9 =
+* Fixed CSP header formatting
+* Improved hash and nonce handling
 
 = 1.0.7 =
-* Fix 15 WordPress-Core PHPCS violations across acsp-builder.php, acsp-register.php, acsp-presets.php
-* Add missing nonce verification & proper sanitisation in admin routing
-* No functional changes; purely coding-standards compliance
+* Added security improvements
+* Fixed code standards issues
 
 = 1.0.3 =
-* WordPress Coding Standards compliance (phpcs)  
-* Add nonce verification for CSRF hardening  
-* Escape all output, Yoda conditions, proper DocBlocks  
-* Auto-fix 135 formatting violations via phpcbf  
+* WordPress coding standards compliance
+* Security enhancements
 
 = 1.0.2 =
-* Fix PHP 8.2 deprecation notices  
-* Improve Elementor compatibility  
+* PHP 8.2 compatibility
+* Elementor improvements
 
 = 1.0.1 =
-* Add report-uri REST endpoint  
-* Add hash allow-list UI  
+* Added report endpoint
+* Hash allow-list interface
 
 = 1.0.0 =
-* Initial release – presets, nonce injection, live preview
+* Initial release
 
 == Upgrade Notice ==
-
-= 1.0.3 =  
-Maintenance release: zero functional changes, full WordPress Coding Standards compliance. Safe to update.
+= 1.0.3 =
+Maintenance release with code improvements. Safe to update.
 
 == Credits ==
-
-Created by [Amir Khosro Awhadi](https://profiles.wordpress.org/awhadi/) – security should be plug-and-play, not a week of Stack-Overflow.
+Created by [Amir Khosro Awhadi](https://profiles.wordpress.org/awhadi/)

@@ -1,22 +1,12 @@
 <?php
-/**
- * Presets.
- *
- * @package acsp-builder
- */
 
-/**
- * Return the built-in policy presets.
- *
- * @return array[]
- */
 function acsp_get_presets() {
-	return array(
-		'relaxed'  => array(
+	return [
+		'relaxed' => [
 			'name'            => 'Relaxed (Beginner)',
 			'nonce_enabled'   => 0,
 			'enable_meta_tag' => 0,
-			'policy'          => array(
+			'policy'          => [
 				'default-src'               => "'self'",
 				'script-src'                => "'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://cdnjs.cloudflare.com https://ajax.cloudflare.com https://code.jquery.com",
 				'style-src'                 => "'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.cloudflare.com",
@@ -31,13 +21,13 @@ function acsp_get_presets() {
 				'style-src-attr'            => "'self' 'unsafe-inline'",
 				'frame-ancestors'           => "'self'",
 				'upgrade-insecure-requests' => '',
-			),
-		),
-		'balanced' => array(
+			],
+		],
+		'balanced' => [
 			'name'            => 'Balanced (Intermediate)',
 			'nonce_enabled'   => 1,
 			'enable_meta_tag' => 0,
-			'policy'          => array(
+			'policy'          => [
 				'default-src'               => "'self'",
 				'script-src'                => "'self' 'unsafe-hashes' https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://cdnjs.cloudflare.com https://ajax.cloudflare.com",
 				'style-src'                 => "'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.cloudflare.com",
@@ -52,13 +42,13 @@ function acsp_get_presets() {
 				'style-src-attr'            => "'none'",
 				'frame-ancestors'           => "'self'",
 				'upgrade-insecure-requests' => '',
-			),
-		),
-		'strict'   => array(
+			],
+		],
+		'strict' => [
 			'name'            => 'Strict (Advanced)',
 			'nonce_enabled'   => 1,
 			'enable_meta_tag' => 0,
-			'policy'          => array(
+			'policy'          => [
 				'default-src'               => "'none'",
 				'script-src'                => "'self' 'strict-dynamic'",
 				'style-src'                 => "'self'",
@@ -73,7 +63,7 @@ function acsp_get_presets() {
 				'style-src-attr'            => "'none'",
 				'frame-ancestors'           => "'none'",
 				'upgrade-insecure-requests' => '',
-			),
-		),
-	);
+			],
+		],
+	];
 }

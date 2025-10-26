@@ -1,17 +1,7 @@
 <?php
-/**
- * Helper utilities for CSP directive handling.
- *
- * @package acsp-builder
- */
 
-/**
- * Return the list of CSP directives this plugin supports.
- *
- * @return string[]
- */
 function acsp_allowed_directives() {
-	return array(
+	static $dirs = array(
 		'default-src',
 		'script-src',
 		'style-src',
@@ -27,23 +17,28 @@ function acsp_allowed_directives() {
 		'style-src-attr',
 		'upgrade-insecure-requests',
 	);
+	return $dirs;
 }
 
-/**
- * Sanitise a policy array coming from the form.
- *
- * @param mixed $input Raw value from the option/form.
- * @return string[]     Sanitised directive => value pairs.
- */
 function acsp_sanitize_policy( $input ) {
 	$sanitized = array();
-	foreach ( acsp_allowed_directives() as $dir ) {
-		if ( isset( $input[ $dir ] ) ) {
-			if ( is_array( $input[ $dir ] ) ) {
-				$parts             = array_map( 'sanitize_text_field', $input[ $dir ] );
-				$sanitized[ $dir ] = implode( ' ', array_filter( $parts ) );
-			} else {
-				$sanitized[ $dir ] = sanitize_text_field( $input[ $dir ] );
+	if ( ! is_array( $input ) ) {
+		return $sanitized;
+	}
+	$allowed = array_flip( acsp_allowed_directives() );
+	foreach ( $input as $dir => $val ) {
+		if ( ! isset( $allowed[ $dir ] ) ) {
+			continue;
+		}
+		if ( is_array( $val ) ) {
+			$parts = array_filter( array_map( 'sanitize_text_field', $val ), 'strlen' );
+			if ( $parts ) {
+				$sanitized[ $dir ] = implode( ' ', $parts );
+			}
+		} else {
+			$val = sanitize_text_field( $val );
+			if ( $val !== '' ) {
+				$sanitized[ $dir ] = $val;
 			}
 		}
 	}

@@ -1,44 +1,21 @@
 <?php
-/**
- * Force policy to "custom" when user edits anything that diverges from a preset.
- *
- * @package acsp-builder
- */
+add_action('update_option_acsp_policy','acsp_maybe_switch_to_custom',10,3);
 
-add_action( 'update_option_acsp_policy', 'acsp_maybe_switch_to_custom', 10, 3 );
-
-/**
- * Switches the active preset to "custom" whenever the saved policy no longer
- * matches the preset that was previously active.
- *
- * @param mixed $old_value  Previous option value.
- * @param mixed $value      New option value.
- */
-function acsp_maybe_switch_to_custom( $old_value, $value ) {
-	if ( ! $value || ! is_array( $value ) ) {
-		return;
+function acsp_normalize_policy(array $a): array {
+	foreach ($a as &$v) {
+		$v = implode(' ', array_unique(array_filter(preg_split('/\s+/', trim($v)), 'strlen')));
 	}
+	ksort($a);
+	return $a;
+}
 
-	$preset_key = get_option( 'acsp_current_preset', '' );
-	if ( ! $preset_key || 'custom' === $preset_key ) {
-		return; // Already custom.
-	}
-
-	$preset_pol = acsp_get_presets()[ $preset_key ]['policy'] ?? array();
-	if ( ! $preset_pol ) {
-		return;
-	}
-
-	// Normalise order & spaces.
-	$norm = function ( $a ) {
-		foreach ( $a as &$v ) {
-			$v = implode( ' ', array_unique( preg_split( '/\s+/', trim( $v ) ) ) );
-		}
-		ksort( $a );
-		return $a;
-	};
-
-	if ( $norm( $preset_pol ) !== $norm( $value ) ) {
-		update_option( 'acsp_current_preset', 'custom' );
+function acsp_maybe_switch_to_custom($old_value, $value) {
+	if (!is_array($value) || !$value) return;
+	$preset_key = get_option('acsp_current_preset', '');
+	if (!$preset_key || 'custom' === $preset_key) return;
+	$preset_pol = acsp_get_presets()[$preset_key]['policy'] ?? [];
+	if (!$preset_pol) return;
+	if (acsp_normalize_policy($preset_pol) !== acsp_normalize_policy($value)) {
+		update_option('acsp_current_preset','custom');
 	}
 }

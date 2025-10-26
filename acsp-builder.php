@@ -1,14 +1,12 @@
 <?php
 /**
  * Plugin Name: aCSP Builder
- * Plugin URI:  https://plugins.awhadi.online
- * Description: The FIRST WordPress plugin that automatically adds cryptographic nonces to every script & stylesheet, lets you hash-lock inline code, and builds a bullet-proof Content Security Policy in one click.
- * Version:     1.0.11
+ * Description: The WordPress plugin that automatically adds cryptographic nonces to every script & stylesheet, lets you hash-lock inline code, and builds a bullet-proof Content Security Policy in one click.
+ * Version:     1.0.12
  * Requires WP: 5.8
- * Requires PHP:7.4
  * Text Domain: acsp-builder
  * Domain Path: /languages
- * Author:      Amir Khosro Awhadi
+ * Author:      Awhadi
  * License:     GPL-2.0+
  *
  * @package acsp-builder
@@ -21,25 +19,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'ACSP_FILE', __FILE__ );
 define( 'ACSP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ACSP_URL', plugin_dir_url( __FILE__ ) );
-define( 'ACSP_VER', '1.0.11' );
 
-/*
-------------------------------------------------------------------
- * Autoloader – loads files ONLY when needed, no re-declare errors.
- * ------------------------------------------------------------------
- */
 add_action( 'plugins_loaded', 'acsp_autoload_register', 0 );
-
-/**
- * Register autoloader for plugin classes/functions.
- *
- * @return void
- */
 function acsp_autoload_register() {
 	$map = array(
-		// Class => file basename (without .php).
 		'aCSP\CSP_Engine'             => 'class-csp-engine',
-		// Functions => file that contains them.
 		'acsp_sanitize_policy'        => 'acsp-helpers',
 		'acsp_allowed_directives'     => 'acsp-helpers',
 		'acsp_get_presets'            => 'acsp-preset-data',
@@ -54,10 +38,12 @@ function acsp_autoload_register() {
 		'acsp_action_links'           => 'acsp-register',
 	);
 
+	$includes = ACSP_DIR . 'includes/';
+
 	spl_autoload_register(
-		function ( $class_name ) use ( $map ) {
+		function ( $class_name ) use ( $map, $includes ) {
 			if ( isset( $map[ $class_name ] ) ) {
-				$file = ACSP_DIR . 'includes/' . $map[ $class_name ] . '.php';
+				$file = $includes . $map[ $class_name ] . '.php';
 				if ( is_readable( $file ) ) {
 					require_once $file;
 				}
@@ -68,7 +54,7 @@ function acsp_autoload_register() {
 				if ( function_exists( $func ) ) {
 					continue;
 				}
-				$file = ACSP_DIR . 'includes/' . $basename . '.php';
+				$file = $includes . $basename . '.php';
 				if ( is_readable( $file ) ) {
 					require_once $file;
 				}
@@ -77,34 +63,12 @@ function acsp_autoload_register() {
 	);
 }
 
-/*
-------------------------------------------------------------------
- * Bootstrap the engine.
- * ------------------------------------------------------------------
- */
 add_action( 'plugins_loaded', 'acsp_boot' );
-
-/**
- * Initialise CSP engine.
- *
- * @return void
- */
 function acsp_boot() {
 	\aCSP\CSP_Engine::init();
 }
 
-/*
- * ------------------------------------------------------------------
- * Admin menu & tabs
- * ------------------------------------------------------------------
- */
 add_action( 'admin_menu', 'acsp_admin_menu' );
-
-/**
- * Register the top-level menu.
- *
- * @return void
- */
 function acsp_admin_menu() {
 	add_menu_page(
 		'aCSP Builder',
@@ -117,54 +81,31 @@ function acsp_admin_menu() {
 	);
 }
 
-/**
- * Route to the correct tab view.
- *
- * @return void
- */
 function acsp_router() {
 	$tabs = array( 'presets', 'builder', 'settings', 'about' );
-
-	// Verify the tab nonce first.
-	if ( empty( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'acsp_tab_' . ( isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'presets' ) ) ) {
+	$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'presets';
+	if ( empty( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'acsp_tab_' . $tab ) ) {
 		wp_die( 'Security check failed.' );
 	}
-
-	$tab = isset( $_GET['tab'] ) && in_array( sanitize_key( wp_unslash( $_GET['tab'] ) ), $tabs, true ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'presets';
-
+	$tab = in_array( $tab, $tabs, true ) ? $tab : 'presets';
 	$map = array(
 		'presets'  => ACSP_DIR . 'admin/acsp-presets.php',
 		'builder'  => ACSP_DIR . 'admin/acsp-custom-builder.php',
 		'settings' => ACSP_DIR . 'admin/acsp-settings.php',
 		'about'    => ACSP_DIR . 'admin/acsp-about.php',
 	);
-
-	if ( is_readable( $map[ $tab ] ) ) {
+	if ( isset( $map[ $tab ] ) && is_readable( $map[ $tab ] ) ) {
 		require_once $map[ $tab ];
 	}
 }
 
-/*
- * ------------------------------------------------------------------
- * CSS + JS  (only on our pages)
- * ------------------------------------------------------------------
- */
 add_action( 'admin_enqueue_scripts', 'acsp_assets' );
-
-/**
- * Enqueue admin assets.
- *
- * @param string $hook_suffix Current admin page.
- * @return void
- */
 function acsp_assets( $hook_suffix ) {
 	if ( 'toplevel_page_acsp-builder' !== $hook_suffix ) {
 		return;
 	}
-	wp_enqueue_style( 'acsp-admin', ACSP_URL . 'assets/acsp.css', array(), ACSP_VER );
-	wp_enqueue_script( 'acsp-admin', ACSP_URL . 'assets/acsp.js', array( 'jquery' ), ACSP_VER, true );
-
-	// Localize AJAX URL and nonce.
+	wp_enqueue_style( 'acsp-admin', ACSP_URL . 'assets/acsp.css', array());
+	wp_enqueue_script( 'acsp-admin', ACSP_URL . 'assets/acsp.js', array( 'jquery' ), true );
 	wp_localize_script(
 		'acsp-admin',
 		'acsp_ajax',
@@ -175,18 +116,7 @@ function acsp_assets( $hook_suffix ) {
 	);
 }
 
-/*
- * ------------------------------------------------------------------
- * Activation / uninstall
- * ------------------------------------------------------------------
- */
 register_activation_hook( ACSP_FILE, 'acsp_activate' );
-
-/**
- * Seed default options on activation.
- *
- * @return void
- */
 function acsp_activate() {
 	add_option( 'acsp_current_preset', 'custom' );
 	add_option( 'acsp_mode', 'reject' );
@@ -194,12 +124,6 @@ function acsp_activate() {
 }
 
 register_uninstall_hook( ACSP_FILE, 'acsp_uninstall' );
-
-/**
- * Remove all traces on uninstall.
- *
- * @return void
- */
 function acsp_uninstall() {
 	$opts = array(
 		'acsp_policy',

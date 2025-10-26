@@ -1,30 +1,22 @@
 <?php
-/**
- * Custom policy builder tab.
- *
- * @package acsp-builder
- */
-
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( 'Unauthorized user' );
 }
 
-// --------- nonce check ---------
 $nonce_action = 'acsp_tab_builder';
 if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), $nonce_action ) ) {
 	wp_die( 'Security check failed.' );
 }
-$acsp_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets';
-// --------------------------------
 
+$acsp_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets';
 wp_enqueue_style( 'acsp-admin' );
 wp_enqueue_script( 'acsp-admin' );
 
-$policy         = get_option( 'acsp_policy', array() );
+$policy = get_option( 'acsp_policy', array() );
 $current_preset = get_option( 'acsp_current_preset', '' );
 
 $directive_data = array(
-	'labels'       => array(
+	'labels' => array(
 		'default-src'     => 'default-src',
 		'script-src'      => 'script-src',
 		'style-src'       => 'style-src',
@@ -54,7 +46,7 @@ $directive_data = array(
 		'frame-ancestors' => 'Restricts which pages may embed this page (click-jacking protection).',
 		'style-src-attr'  => 'Inline style attributes. Set to \'none\' to block all inline style="...".',
 	),
-	'keywords'     => array(
+	'keywords' => array(
 		'default-src'     => array( "'none'", "'self'" ),
 		'script-src'      => array( "'self'", "'unsafe-inline'", "'unsafe-eval'", "'strict-dynamic'", "'unsafe-hashes'" ),
 		'style-src'       => array( "'self'", "'unsafe-inline'", "'unsafe-hashes'" ),
@@ -112,14 +104,11 @@ $keyword_explanations = array(
 				esc_html( $label )
 			);
 		endforeach;
+		
+		$badge_preset = $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom';
+		$badge_class = $current_preset ?: 'custom';
 		?>
-		<?php
-		$badge_preset = ( $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom';
-		$badge_class  = $current_preset ? $current_preset : 'custom';
-		?>
-		<span class="acsp-preset-badge <?php echo esc_attr( $badge_class ); ?>">
-			<?php echo esc_html( $badge_preset ); ?>
-		</span>
+		<span class="acsp-preset-badge <?php echo esc_attr( $badge_class ); ?>"><?php echo esc_html( $badge_preset ); ?></span>
 	</h2>
 
 	<div class="acsp-card" style="display: flex; gap: 20px;">
@@ -137,7 +126,7 @@ $keyword_explanations = array(
 					<div class="notice notice-success">
 						<p><strong><?php esc_html_e( '✅ Preset active.', 'acsp-builder' ); ?></strong> <?php esc_html_e( 'Customising will switch to a custom policy.', 'acsp-builder' ); ?></p>
 					</div>
-				<?php elseif ( ! $current_preset && empty( get_option( 'acsp_policy' ) ) ) : ?>
+				<?php elseif ( ! $current_preset && empty( $policy ) ) : ?>
 					<div class="notice notice-info">
 						<p><strong><?php esc_html_e( 'ℹ️ No CSP active', 'acsp-builder' ); ?></strong> <?php esc_html_e( 'Configure directives below to create a custom policy.', 'acsp-builder' ); ?></p>
 					</div>
@@ -146,22 +135,22 @@ $keyword_explanations = array(
 				<p><?php esc_html_e( 'Check the keywords you want, and/or add extra hostnames. Leave everything unchecked to fall back to the default.', 'acsp-builder' ); ?></p>
 
 				<table class="form-table">
-					<?php foreach ( $directive_data['labels'] as $dir => $label ) : ?>
-						<?php $current_parts = isset( $policy[ $dir ] ) ? preg_split( '/\s+/', trim( $policy[ $dir ] ) ) : array(); ?>
+					<?php 
+					$is_hash_enabled = (bool) get_option( 'acsp_enable_hashes', 0 );
+					foreach ( $directive_data['labels'] as $dir => $label ) : 
+						$current_parts = isset( $policy[ $dir ] ) ? preg_split( '/\s+/', trim( $policy[ $dir ] ) ) : array();
+						$custom = array_diff( $current_parts, $directive_data['keywords'][ $dir ] );
+					?>
 						<tr>
 							<th><?php echo esc_html( $label ); ?>
 								<span class="dashicons dashicons-info" title="<?php echo esc_attr( $directive_data['descriptions'][ $dir ] ); ?>"></span>
 							</th>
 							<td>
 								<div class="acsp-keywords">
-									<?php
-									$is_hash_enabled = (bool) get_option( 'acsp_enable_hashes', 0 );
-									foreach ( $directive_data['keywords'][ $dir ] as $kw ) :
-										if ( "'unsafe-hashes'" === $kw && ! $is_hash_enabled ) {
-											continue;
-										}
+									<?php foreach ( $directive_data['keywords'][ $dir ] as $kw ) : 
+										if ( "'unsafe-hashes'" === $kw && ! $is_hash_enabled ) continue;
 										$checked = in_array( $kw, $current_parts, true );
-										?>
+									?>
 										<label>
 											<input type="checkbox" name="acsp_policy[<?php echo esc_attr( $dir ); ?>][]" value="<?php echo esc_attr( $kw ); ?>" <?php checked( $checked ); ?>>
 											<?php echo esc_html( $kw ); ?>
@@ -170,10 +159,7 @@ $keyword_explanations = array(
 								</div>
 
 								<div class="acsp-custom-urls" data-dir="<?php echo esc_attr( $dir ); ?>">
-									<?php
-									$custom = array_diff( $current_parts, $directive_data['keywords'][ $dir ] );
-									foreach ( $custom as $url ) :
-										?>
+									<?php foreach ( $custom as $url ) : ?>
 										<div style="margin-top:4px;">
 											<input type="text" name="acsp_policy[<?php echo esc_attr( $dir ); ?>][]" value="<?php echo esc_attr( $url ); ?>" placeholder="https://example.com" class="regular-text code" />
 											<button type="button" class="button acsp-remove-url">Remove</button>

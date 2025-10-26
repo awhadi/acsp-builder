@@ -1,42 +1,20 @@
 <?php
-/**
- * Ajax handlers + JSON import/export + preset apply/reset.
- *
- * @package acsp-builder
- */
-
-// ------------------------------------------------------------------
-// Ajax endpoint testing.
-// ------------------------------------------------------------------
 add_action( 'wp_ajax_acsp_test_report_endpoint', 'acsp_test_report_endpoint' );
 
-/**
- * Test if a report endpoint is valid and available.
- *
- * @since 1.0.9
- */
 function acsp_test_report_endpoint() {
-	// Basic capability check.
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_send_json_error( 'Insufficient permissions.' );
 	}
 
-	// Nonce check.
-	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'acsp_test_endpoint' ) ) {
+	if ( empty( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'acsp_test_endpoint' ) ) {
 		wp_send_json_error( 'Security check failed. Please refresh the page and try again.' );
 	}
 
 	$url = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '';
-	if ( ! $url ) {
-		wp_send_json_error( 'Empty URL provided.' );
+	if ( ! $url || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+		wp_send_json_error( 'Invalid or empty URL provided.' );
 	}
 
-	// Validate URL format.
-	if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
-		wp_send_json_error( 'Invalid URL format.' );
-	}
-
-	// Test the endpoint with a proper CSP report format.
 	$test_report = array(
 		'csp-report' => array(
 			'document-uri'        => home_url(),
@@ -57,7 +35,6 @@ function acsp_test_report_endpoint() {
 	$response = wp_remote_post(
 		$url,
 		array(
-			'method'      => 'POST',
 			'body'        => wp_json_encode( $test_report ),
 			'headers'     => array(
 				'Content-Type' => 'application/csp-report',
@@ -66,57 +43,44 @@ function acsp_test_report_endpoint() {
 			'timeout'     => 15,
 			'redirection' => 2,
 			'httpversion' => '1.1',
-			'sslverify'   => false, // Allow self-signed certificates for testing.
+			'sslverify'   => false,
 		)
 	);
 
 	if ( is_wp_error( $response ) ) {
-		$error_message = $response->get_error_message();
-
-		// Provide more user-friendly error messages.
-		if ( strpos( $error_message, 'cURL error' ) !== false ) {
-			if ( strpos( $error_message, 'Could not resolve host' ) !== false ) {
-				wp_send_json_error( 'Could not resolve the hostname. Please check the URL.' );
-			} elseif ( strpos( $error_message, 'Connection timed out' ) !== false ) {
-				wp_send_json_error( 'Connection timed out. The endpoint may be unreachable.' );
-			} elseif ( strpos( $error_message, 'SSL certificate' ) !== false ) {
-				wp_send_json_error( 'SSL certificate error. The endpoint may have an invalid certificate.' );
-			}
+		$error = $response->get_error_message();
+		if ( strpos( $error, 'Could not resolve host' ) !== false ) {
+			wp_send_json_error( 'Could not resolve the hostname. Please check the URL.' );
 		}
-
-		wp_send_json_error( $error_message );
+		if ( strpos( $error, 'Connection timed out' ) !== false ) {
+			wp_send_json_error( 'Connection timed out. The endpoint may be unreachable.' );
+		}
+		if ( strpos( $error, 'SSL certificate' ) !== false ) {
+			wp_send_json_error( 'SSL certificate error. The endpoint may have an invalid certificate.' );
+		}
+		wp_send_json_error( $error );
 	}
 
 	$code = wp_remote_retrieve_response_code( $response );
-	$body = wp_remote_retrieve_body( $response );
 
 	if ( $code >= 200 && $code < 300 ) {
 		wp_send_json_success( 'Endpoint is responding correctly (HTTP ' . $code . ').' );
-	} elseif ( $code >= 400 && $code < 500 ) {
-		wp_send_json_error( "Endpoint returned client error (HTTP $code). The endpoint may not be configured to accept CSP reports." );
-	} elseif ( $code >= 500 ) {
-		wp_send_json_error( "Endpoint returned server error (HTTP $code). The endpoint server may be experiencing issues." );
-	} else {
-		wp_send_json_error( "Unexpected response (HTTP $code)." );
 	}
+	if ( $code >= 400 && $code < 500 ) {
+		wp_send_json_error( "Endpoint returned client error (HTTP $code). The endpoint may not be configured to accept CSP reports." );
+	}
+	if ( $code >= 500 ) {
+		wp_send_json_error( "Endpoint returned server error (HTTP $code). The endpoint server may be experiencing issues." );
+	}
+	wp_send_json_error( "Unexpected response (HTTP $code)." );
 }
 
-// ------------------------------------------------------------------
-// JSON EXPORT (triggered in settings tab).
-// ------------------------------------------------------------------
 add_action( 'admin_post_acsp_export_json', 'acsp_handle_export' );
 
-/**
- * Stream a JSON file that contains current policy & settings.
- *
- * @since 1.0.3
- */
 function acsp_handle_export() {
 	if ( ! isset( $_POST['acsp_export_json'] ) ) {
 		return;
 	}
-
-	// Capability + nonce.
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( 'insufficient_permissions' );
 	}
@@ -141,81 +105,32 @@ function acsp_handle_export() {
 	exit;
 }
 
-// ------------------------------------------------------------------
-// JSON IMPORT (admin-post.php handler).
-// ------------------------------------------------------------------
 add_action( 'admin_post_acsp_import_json', 'acsp_handle_import' );
 
-/**
- * Handle uploaded JSON file and import settings.
- *
- * @since 1.0.3
- */
 function acsp_handle_import() {
-	// Capability + nonce.
 	if ( ! current_user_can( 'manage_options' )
-		|| ! isset( $_POST['acsp_import_json_nonce'] )
+		|| empty( $_POST['acsp_import_json_nonce'] )
 		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['acsp_import_json_nonce'] ) ), 'acsp_import_json_action' )
 	) {
 		wp_die( 'Security check failed.' );
 	}
 
-	// Make sure the upload field actually arrived.
-	if ( empty( $_FILES['acsp_import_file'] ) || ! isset( $_FILES['acsp_import_file']['tmp_name'] ) ) {
-		add_settings_error( 'acsp_settings', 'acsp_import_fail', 'No file uploaded.', 'error' );
-		set_transient( 'settings_errors', get_settings_errors(), 30 );
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page'     => 'acsp-builder',
-					'tab'      => 'settings',
-					'_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ),
-				),
-				admin_url( 'admin.php' )
-			)
-		);
-		exit;
+	if ( empty( $_FILES['acsp_import_file']['tmp_name'] ) ) {
+		acsp_admin_import_redirect( 'No file uploaded.' );
 	}
 
-	$file = sanitize_text_field( wp_unslash( $_FILES['acsp_import_file']['tmp_name'] ) );
+	$file = wp_unslash( $_FILES['acsp_import_file']['tmp_name'] );
 	if ( ! is_uploaded_file( $file ) ) {
-		add_settings_error( 'acsp_settings', 'acsp_import_fail', 'Upload failed.', 'error' );
-		set_transient( 'settings_errors', get_settings_errors(), 30 );
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page'     => 'acsp-builder',
-					'tab'      => 'settings',
-					'_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ),
-				),
-				admin_url( 'admin.php' )
-			)
-		);
-		exit;
+		acsp_admin_import_redirect( 'Upload failed.' );
 	}
 
-	// Local file -- file_get_contents() is appropriate here.
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 	$json = file_get_contents( $file );
 	$data = json_decode( $json, true );
 
 	if ( empty( $data ) || ! is_array( $data ) ) {
-		add_settings_error( 'acsp_settings', 'acsp_import_fail', 'Invalid JSON file.', 'error' );
-		set_transient( 'settings_errors', get_settings_errors(), 30 );
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page'     => 'acsp-builder',
-					'tab'      => 'settings',
-					'_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ),
-				),
-				admin_url( 'admin.php' )
-			)
-		);
-		exit;
+		acsp_admin_import_redirect( 'Invalid JSON file.' );
 	}
 
-	// Import into DB.
 	update_option( 'acsp_mode', $data['mode'] ?? 'reject' );
 	update_option( 'acsp_add_dynamic_nonce', $data['add_dynamic_nonce'] ?? 1 );
 	update_option( 'acsp_policy', $data['policy'] ?? array() );
@@ -227,64 +142,33 @@ function acsp_handle_import() {
 
 	add_settings_error( 'acsp_settings', 'acsp_import_ok', 'JSON preset imported successfully.', 'updated' );
 	set_transient( 'settings_errors', get_settings_errors(), 30 );
-	wp_safe_redirect(
-		add_query_arg(
-			array(
-				'page'     => 'acsp-builder',
-				'tab'      => 'settings',
-				'_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ),
-			),
-			admin_url( 'admin.php' )
-		)
-	);
+	wp_safe_redirect( add_query_arg( array( 'page' => 'acsp-builder', 'tab' => 'settings', '_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ) ), admin_url( 'admin.php' ) ) );
 	exit;
 }
 
-// ------------------------------------------------------------------
-// PRESET APPLY + RESET (safe POST handlers).
-// ------------------------------------------------------------------
+function acsp_admin_import_redirect( $message ) {
+	add_settings_error( 'acsp_settings', 'acsp_import_fail', $message, 'error' );
+	set_transient( 'settings_errors', get_settings_errors(), 30 );
+	wp_safe_redirect( add_query_arg( array( 'page' => 'acsp-builder', 'tab' => 'settings', '_wpnonce' => wp_create_nonce( 'acsp_tab_settings' ) ), admin_url( 'admin.php' ) ) );
+	exit;
+}
+
 add_action( 'admin_init', 'acsp_preset_reset_handlers' );
 
-/**
- * Handles two distinct actions:
- * 1. "Reset all policies" button.
- * 2. "Apply preset" link (GET with nonce).
- *
- * @since 1.0.3
- */
 function acsp_preset_reset_handlers() {
-	// ---------- RESET ----------
 	if ( isset( $_POST['acsp_reset_all'] ) ) {
-		if ( ! isset( $_POST['acsp_reset_nonce'] )
-			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['acsp_reset_nonce'] ) ), 'acsp_reset_action' )
-		) {
+		if ( empty( $_POST['acsp_reset_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['acsp_reset_nonce'] ) ), 'acsp_reset_action' ) ) {
 			wp_die( 'The link you followed has expired. Please try again.' );
 		}
-
-		$opts = array(
-			'acsp_policy',
-			'acsp_current_preset',
-			'acsp_add_dynamic_nonce',
-		);
-		foreach ( $opts as $o ) {
+		foreach ( array( 'acsp_policy', 'acsp_current_preset', 'acsp_add_dynamic_nonce' ) as $o ) {
 			delete_option( $o );
 		}
 		set_transient( 'acsp_live_policy_preview', 'No CSP active (policy is empty).', 30 );
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page'     => 'acsp-builder',
-					'tab'      => 'presets',
-					'_wpnonce' => wp_create_nonce( 'acsp_tab_presets' ),
-				),
-				admin_url( 'admin.php' )
-			)
-		);
+		wp_safe_redirect( add_query_arg( array( 'page' => 'acsp-builder', 'tab' => 'presets', '_wpnonce' => wp_create_nonce( 'acsp_tab_presets' ) ), admin_url( 'admin.php' ) ) );
 		exit;
 	}
 
-	// ---------- APPLY PRESET ----------
-	if ( isset( $_GET['acsp_apply_preset'] ) && isset( $_GET['acsp_preset_nonce'] ) ) {
+	if ( isset( $_GET['acsp_apply_preset'], $_GET['acsp_preset_nonce'] ) ) {
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['acsp_preset_nonce'] ) ), 'acsp_preset_action' ) ) {
 			wp_die( 'Security check failed.' );
 		}
@@ -297,21 +181,11 @@ function acsp_preset_reset_handlers() {
 			update_option( 'acsp_add_dynamic_nonce', $presets[ $preset ]['nonce_enabled'] );
 			update_option( 'acsp_current_preset', $preset );
 			update_option( 'acsp_enable_meta_tag', $presets[ $preset ]['enable_meta_tag'] );
-
 			add_settings_error( 'acsp', 'preset_applied', sprintf( 'Preset "%s" applied.', $presets[ $preset ]['name'] ), 'updated' );
 			set_transient( 'settings_errors', get_settings_errors(), 30 );
 		}
 
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page'     => 'acsp-builder',
-					'tab'      => 'presets',
-					'_wpnonce' => wp_create_nonce( 'acsp_tab_presets' ),
-				),
-				admin_url( 'admin.php' )
-			)
-		);
+		wp_safe_redirect( add_query_arg( array( 'page' => 'acsp-builder', 'tab' => 'presets', '_wpnonce' => wp_create_nonce( 'acsp_tab_presets' ) ), admin_url( 'admin.php' ) ) );
 		exit;
 	}
 }

@@ -1,21 +1,14 @@
 <?php
-/**
- * Settings tab.
- *
- * @package acsp-builder
- */
-
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( 'Unauthorized user' );
 }
 
-// --------- nonce check ---------
 $nonce_action = 'acsp_tab_settings';
 if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), $nonce_action ) ) {
 	wp_die( 'Security check failed.' );
 }
+
 $acsp_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'presets';
-// --------------------------------
 
 wp_enqueue_style( 'acsp-admin' );
 wp_enqueue_script( 'acsp-admin' );
@@ -51,13 +44,12 @@ settings_errors( 'acsp_settings' );
 				esc_html( $label )
 			);
 		endforeach;
+		
+		$current_preset = get_option( 'acsp_current_preset' );
+		$preset_class = $current_preset ?: 'custom';
+		$preset_name = $current_preset && isset( acsp_get_presets()[ $current_preset ] ) ? acsp_get_presets()[ $current_preset ]['name'] : 'Custom';
 		?>
-		<span class="acsp-preset-badge <?php echo esc_attr( get_option( 'acsp_current_preset' ) ? get_option( 'acsp_current_preset' ) : 'custom' ); ?>">
-		<?php
-			$cp = get_option( 'acsp_current_preset' );
-			echo esc_html( $cp && isset( acsp_get_presets()[ $cp ] ) ? acsp_get_presets()[ $cp ]['name'] : 'Custom' );
-		?>
-		</span>
+		<span class="acsp-preset-badge <?php echo esc_attr( $preset_class ); ?>"><?php echo esc_html( $preset_name ); ?></span>
 	</h2>
 
 	<div style="display:flex;gap:24px;align-items:flex-start;">
@@ -119,7 +111,6 @@ settings_errors( 'acsp_settings' );
 					</table>
 				</div>
 
-				<!-- ===== Hash Allow-List ===== -->
 				<div class="acsp-card">
 					<h3>Hash Allow-List</h3>
 					<table class="form-table">
@@ -127,8 +118,7 @@ settings_errors( 'acsp_settings' );
 							<th scope="row">Enable&nbsp;hashes</th>
 							<td>
 								<label>
-									<input type="checkbox" name="acsp_enable_hashes" id="acsp_enable_hashes" value="1"
-										<?php checked( get_option( 'acsp_enable_hashes', 0 ) ); ?> />
+									<input type="checkbox" name="acsp_enable_hashes" id="acsp_enable_hashes" value="1" <?php checked( get_option( 'acsp_enable_hashes', 0 ) ); ?> />
 									Enabled
 								</label>
 							</td>
@@ -139,15 +129,11 @@ settings_errors( 'acsp_settings' );
 							<td>
 								<div id="acsp-hash-list" class="acsp-hash-list">
 									<?php
-									$hashes = get_option( 'acsp_hash_values', array() );
-									if ( ! $hashes ) {
-										$hashes = array( '' );
-									}
+									$hashes = get_option( 'acsp_hash_values', array( '' ) );
 									foreach ( $hashes as $hash ) :
 										?>
 										<div class="acsp-hash-item">
-											<input type="text" name="acsp_hash_values[]" value="<?php echo esc_attr( $hash ); ?>"
-													placeholder="sha256-…" class="regular-text code"/>
+											<input type="text" name="acsp_hash_values[]" value="<?php echo esc_attr( $hash ); ?>" placeholder="sha256-…" class="regular-text code"/>
 											<button type="button" class="button button-small acsp-remove-hash">Remove</button>
 										</div>
 									<?php endforeach; ?>
@@ -164,27 +150,26 @@ settings_errors( 'acsp_settings' );
 				</div>
 
 				<div class="acsp-card">
-	<h3>Report</h3>
-	<p>Enter the endpoint where violation reports should be sent (optional).</p>
-	<table class="form-table">
-		<tr>
-	<th scope="row">Report endpoint</th>
-	<td>
-		<?php
-		$report_endpoint = get_option( 'acsp_report_endpoint', '' );
-		// Handle array format from aCSP Report plugin.
-		if ( is_array( $report_endpoint ) && isset( $report_endpoint['rest'] ) ) {
-			$report_endpoint = $report_endpoint['rest'];
-		}
-		?>
-		<input type="url" name="acsp_report_endpoint" id="acsp_report_endpoint" value="<?php echo esc_attr( $report_endpoint ); ?>" class="regular-text code" placeholder="https://example.com/wp-json/acsp/v1/report">
-		<button type="button" id="acsp_test_endpoint" class="button button-secondary" style="margin-left: 10px;">Test Endpoint</button>
-		<span id="acsp_test_result" style="margin-left: 10px; display: none;"></span>
-		<p class="description">URL that receives both <code>report-to</code> and legacy <code>report-uri</code> reports.</p>
-	</td>
-</tr>
-	</table>
-</div>
+					<h3>Report</h3>
+					<p>Enter the endpoint where violation reports should be sent (optional).</p>
+					<table class="form-table">
+						<tr>
+							<th scope="row">Report endpoint</th>
+							<td>
+								<?php
+								$report_endpoint = get_option( 'acsp_report_endpoint', '' );
+								if ( is_array( $report_endpoint ) && isset( $report_endpoint['rest'] ) ) {
+									$report_endpoint = $report_endpoint['rest'];
+								}
+								?>
+								<input type="url" name="acsp_report_endpoint" id="acsp_report_endpoint" value="<?php echo esc_attr( $report_endpoint ); ?>" class="regular-text code" placeholder="https://example.com/wp-json/acsp/v1/report">
+								<button type="button" id="acsp_test_endpoint" class="button button-secondary" style="margin-left: 10px;">Test Endpoint</button>
+								<span id="acsp_test_result" style="margin-left: 10px; display: none;"></span>
+								<p class="description">URL that receives both <code>report-to</code> and legacy <code>report-uri</code> reports.</p>
+							</td>
+						</tr>
+					</table>
+				</div>
 
 				<div style="display:flex;justify-content:flex-end;margin-top:20px;">
 					<?php submit_button( 'Save Changes', 'primary', 'submit', false ); ?>
@@ -192,37 +177,26 @@ settings_errors( 'acsp_settings' );
 			</form>
 		</div>
 
-		<!-- -------------------------------------------------------------------------
-			EXPORT / IMPORT
-			------------------------------------------------------------------------- -->
 		<div style="width:320px;">
 			<div class="acsp-card">
 				<h3>Export / Import Preset</h3>
 
-				<!-- EXPORT -->
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="acsp_export_json">
 					<?php wp_nonce_field( 'acsp_export_json_action', 'acsp_export_json_nonce' ); ?>
 					<p><strong>Export</strong></p>
-					<p style="font-size:13px;margin-bottom:12px;">
-						Download a JSON file with the current policy & all settings.
-					</p>
+					<p style="font-size:13px;margin-bottom:12px;">Download a JSON file with the current policy & all settings.</p>
 					<?php submit_button( 'Download JSON', 'primary', 'acsp_export_json', false ); ?>
 				</form>
 
 				<hr style="margin:20px 0;">
 
-				<!-- IMPORT -->
-				<form method="post" enctype="multipart/form-data"
-						action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="acsp_import_json">
 					<?php wp_nonce_field( 'acsp_import_json_action', 'acsp_import_json_nonce' ); ?>
 					<p><strong>Import</strong></p>
-					<p style="font-size:13px;margin-bottom:12px;">
-						Upload a previously exported JSON file.
-					</p>
-					<input type="file" name="acsp_import_file" accept=".json" required
-							style="width:100%;margin-bottom:10px;">
+					<p style="font-size:13px;margin-bottom:12px;">Upload a previously exported JSON file.</p>
+					<input type="file" name="acsp_import_file" accept=".json" required style="width:100%;margin-bottom:10px;">
 					<?php submit_button( 'Upload & Import', 'secondary', 'acsp_import_json', false ); ?>
 				</form>
 			</div>

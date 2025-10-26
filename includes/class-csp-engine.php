@@ -1,50 +1,13 @@
 <?php
-/**
- * CSP engine.
- *
- * @package acsp-builder
- */
 
 namespace aCSP;
 
-/**
- * CSP Engine handler – sends headers, injects nonces, buffers output.
- */
 final class CSP_Engine {
-
-	/**
-	 * Single instance.
-	 *
-	 * @var self|null
-	 */
 	private static $instance = null;
-
-	/**
-	 * Whether nonces are enabled.
-	 *
-	 * @var bool
-	 */
 	private $nonce_enabled;
-
-	/**
-	 * Parsed policy array.
-	 *
-	 * @var array
-	 */
 	private $policy_options;
-
-	/**
-	 * Mode: reject | report.
-	 *
-	 * @var string
-	 */
 	private $mode;
 
-	/**
-	 * Initialise (or fetch) the singleton.
-	 *
-	 * @return self
-	 */
 	public static function init() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -52,20 +15,13 @@ final class CSP_Engine {
 		return self::$instance;
 	}
 
-	/**
-	 * Set up properties and hooks.
-	 */
 	private function __construct() {
 		$this->nonce_enabled  = (bool) get_option( 'acsp_add_dynamic_nonce', 1 );
 		$this->policy_options = get_option( 'acsp_policy', array() );
 		$this->mode           = get_option( 'acsp_mode', 'reject' );
-
 		$this->hooks();
 	}
 
-	/**
-	 * Register all WordPress hooks.
-	 */
 	private function hooks() {
 		add_action( 'init', array( $this, 'initialize_nonce' ) );
 		add_action( 'wp_head', array( $this, 'output_csp_meta_tag' ), 1 );
@@ -81,19 +37,12 @@ final class CSP_Engine {
 		add_action( 'init', array( $this, 'refresh_nonce_in_policy' ) );
 	}
 
-	/**
-	 * Create the cryptographic nonce if it does not exist.
-	 */
 	public function initialize_nonce() {
 		if ( ! defined( 'ACSP_NONCE' ) ) {
-			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 			define( 'ACSP_NONCE', base64_encode( random_bytes( 16 ) ) );
 		}
 	}
 
-	/**
-	 * Output CSP as meta tag if the option is enabled.
-	 */
 	public function output_csp_meta_tag() {
 		if ( ! get_option( 'acsp_enable_meta_tag', 0 ) ) {
 			return;
@@ -107,9 +56,6 @@ final class CSP_Engine {
 		}
 	}
 
-	/**
-	 * Send CSP HTTP header.
-	 */
 	public function send_csp_header() {
 		if ( empty( array_filter( $this->policy_options ) ) ) {
 			return;
@@ -119,18 +65,11 @@ final class CSP_Engine {
 		}
 		if ( ! headers_sent() && defined( 'ACSP_NONCE' ) ) {
 			$csp    = $this->generate_csp_policy( true );
-			$header = ( 'report' === $this->mode )
-				? 'Content-Security-Policy-Report-Only: '
-				: 'Content-Security-Policy: ';
+			$header = ( 'report' === $this->mode ) ? 'Content-Security-Policy-Report-Only: ' : 'Content-Security-Policy: ';
 			header( $header . $csp );
 		}
 	}
 
-	/**
-	 * Decide whether a CSP header/tag should be produced.
-	 *
-	 * @return bool
-	 */
 	private function should_output_csp() {
 		$current_preset = get_option( 'acsp_current_preset', '' );
 		if ( ! empty( $current_preset ) ) {
@@ -146,9 +85,6 @@ final class CSP_Engine {
 		return false;
 	}
 
-	/**
-	 * Replace [NONCE] placeholder with the real nonce if necessary.
-	 */
 	public function refresh_nonce_in_policy() {
 		if ( ! defined( 'ACSP_NONCE' ) || ! $this->should_output_csp() ) {
 			return;
@@ -167,12 +103,6 @@ final class CSP_Engine {
 		}
 	}
 
-	/**
-	 * Build the complete CSP string.
-	 *
-	 * @param bool $for_header Generate for HTTP header (adds Report-To).
-	 * @return string
-	 */
 	public function generate_csp_policy( $for_header = true ) {
 		$directives = array();
 		if ( empty( array_filter( $this->policy_options ) ) ) {
@@ -184,34 +114,26 @@ final class CSP_Engine {
 				continue;
 			}
 
-			// Split the directive value into parts for proper ordering.
 			$parts = preg_split( '/\s+/', trim( $value ) );
 
-			// Insert hashes right after 'unsafe-hashes' if present.
 			$hash_enabled = (bool) get_option( 'acsp_enable_hashes', 0 );
 			$hash_values  = array_filter( (array) get_option( 'acsp_hash_values', array() ) );
 
-			if ( $hash_enabled && ! empty( $hash_values ) &&
-				in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
-
+			if ( $hash_enabled && ! empty( $hash_values ) && in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
 				$unsafe_hashes_index = array_search( "'unsafe-hashes'", $parts, true );
 				if ( false !== $unsafe_hashes_index ) {
-					// Ensure each hash is properly quoted.
 					$quoted_hashes = array();
 					foreach ( $hash_values as $hash ) {
 						$quoted_hashes[] = "'" . esc_attr( trim( $hash ) ) . "'";
 					}
-					// Insert quoted hashes immediately after 'unsafe-hashes'.
 					array_splice( $parts, $unsafe_hashes_index + 1, 0, $quoted_hashes );
 				}
 			}
 
-			// Add nonce at the end for script/style directives.
 			if ( $this->nonce_enabled && in_array( $key, array( 'script-src', 'style-src' ), true ) ) {
 				$parts[] = "'nonce-" . ACSP_NONCE . "'";
 			}
 
-			// Reconstruct the directive with proper order.
 			$directives[ $key ] = implode( ' ', $parts );
 		}
 
@@ -240,14 +162,6 @@ final class CSP_Engine {
 		return implode( '; ', $policy );
 	}
 
-	/**
-	 * Add nonce attribute to <script> tags.
-	 *
-	 * @param string $tag    Original tag markup.
-	 * @param string $handle Script handle.
-	 * @param string $src    Script source.
-	 * @return string
-	 */
 	public function inject_nonce_to_scripts( $tag, $handle, $src ) {
 		if ( defined( 'ACSP_NONCE' ) && $src && false === strpos( $tag, ' nonce=' ) ) {
 			$tag = str_replace( '<script', '<script nonce="' . ACSP_NONCE . '"', $tag );
@@ -255,14 +169,6 @@ final class CSP_Engine {
 		return $tag;
 	}
 
-	/**
-	 * Add nonce attribute to <link> tags for stylesheets.
-	 *
-	 * @param string $tag    Original tag markup.
-	 * @param string $handle Style handle.
-	 * @param string $src    Style source.
-	 * @return string
-	 */
 	public function inject_nonce_to_styles( $tag, $handle, $src ) {
 		if ( defined( 'ACSP_NONCE' ) && $src && false === strpos( $tag, ' nonce=' ) ) {
 			$tag = str_replace( '<link', '<link nonce="' . ACSP_NONCE . '"', $tag );
@@ -270,30 +176,18 @@ final class CSP_Engine {
 		return $tag;
 	}
 
-	/**
-	 * Start output buffering to catch inline scripts/styles.
-	 */
 	public function start_output_buffering() {
 		if ( defined( 'ACSP_NONCE' ) ) {
 			ob_start( array( $this, 'inject_nonce_to_inline_code' ) );
 		}
 	}
 
-	/**
-	 * Flush the output buffer.
-	 */
 	public function end_output_buffering() {
 		if ( defined( 'ACSP_NONCE' ) && ob_get_length() ) {
 			ob_end_flush();
 		}
 	}
 
-	/**
-	 * Inject nonce into inline <script> and <style> elements.
-	 *
-	 * @param string $buffer Full HTML page.
-	 * @return string
-	 */
 	public function inject_nonce_to_inline_code( $buffer ) {
 		if ( ! defined( 'ACSP_NONCE' ) ) {
 			return $buffer;
@@ -317,11 +211,6 @@ final class CSP_Engine {
 		return $buffer;
 	}
 
-	/**
-	 * Return the current nonce.
-	 *
-	 * @return string
-	 */
 	public static function get_nonce() {
 		return defined( 'ACSP_NONCE' ) ? ACSP_NONCE : '';
 	}
